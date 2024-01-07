@@ -114,6 +114,7 @@
 <script setup>
 import Matrix from './matrix'
 import spinner from './spinner.svg'
+import { calculatePageRotation } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 const emit = defineEmits([
   'flip-left-start',
@@ -494,23 +495,8 @@ const flipRight = () => {
   }
 }
 
-const makePolygonArray = (face) => {
-  if (!flip.direction) return []
-
-  let progress = flip.progress
-  let direction = flip.direction
-
-  if (displayedPages.value === 1 && direction !== props.forwardDirection) {
-    progress = 1 - progress
-    direction = props.forwardDirection
-  }
-
-  flip.opacity = displayedPages.value === 1 && progress > 0.7 ? 1 - (progress - 0.7) / 0.3 : 1
-
-  let image = face === 'front' ? flip.frontImage : flip.backImage
-
-  const polyWidth = pageWidth.value / props.nPolygons
-
+// 计算页面X坐标和原点位置
+const calculatePageXAndOrigin = (face, direction) => {
   let pageX = xMargin.value
   let originRight = false
   if (displayedPages.value === 1) {
@@ -549,23 +535,19 @@ const makePolygonArray = (face) => {
       }
     }
   }
+  return {
+    pageX,
+    originRight
+  }
+}
 
+// 计算页面矩阵
+const calculatePageMatrix = (pageX, originRight, pageRotation) => {
   const pageMatrix = new Matrix()
   pageMatrix.translate(viewWidth.value / 2)
   pageMatrix.perspective(props.perspective)
   pageMatrix.translate(-viewWidth.value / 2)
   pageMatrix.translate(pageX, yMargin.value)
-
-  let pageRotation = 0
-  if (progress > 0.5) {
-    pageRotation = -(progress - 0.5) * 2 * 180
-  }
-  if (direction === 'left') {
-    pageRotation = -pageRotation
-  }
-  if (face === 'back') {
-    pageRotation += 180
-  }
 
   if (pageRotation) {
     if (originRight) {
@@ -577,6 +559,10 @@ const makePolygonArray = (face) => {
     }
   }
 
+  return pageMatrix
+}
+
+const calculateThetaAndRadius = (progress) => {
   let theta
   if (progress < 0.5) theta = progress * 2 * Math.PI
   else theta = (1 - (progress - 0.5) * 2) * Math.PI
@@ -584,15 +570,50 @@ const makePolygonArray = (face) => {
 
   const radius = pageWidth.value / theta
 
-  let radian = 0
-  let dRadian = theta / props.nPolygons
-  let rotate = (dRadian / 2 / Math.PI) * 180
-  let dRotate = (dRadian / Math.PI) * 180
+  return {
+    theta,
+    radius
+  }
+}
 
+const calculateXAndZ = (rad, radius, originRight, face) => {
+  let x = Math.sin(rad) * radius
   if (originRight) {
-    rotate = (-theta / Math.PI) * 180 + dRotate / 2
+    x = pageWidth.value - x
+  }
+  let z = (1 - Math.cos(rad)) * radius
+  if (face === 'back') {
+    z = -z
   }
 
+  return { x, z }
+}
+
+const makePolygonArray = (face) => {
+  if (!flip.direction) return []
+
+  let progress = flip.progress
+  let direction = flip.direction
+
+  if (displayedPages.value === 1 && direction !== props.forwardDirection) {
+    progress = 1 - progress
+    direction = props.forwardDirection
+  }
+
+  flip.opacity = displayedPages.value === 1 && progress > 0.7 ? 1 - (progress - 0.7) / 0.3 : 1
+
+  let image = face === 'front' ? flip.frontImage : flip.backImage
+  const polyWidth = pageWidth.value / props.nPolygons
+  const { pageX, originRight } = calculatePageXAndOrigin(face, direction)
+  const pageRotation = calculatePageRotation(progress, direction, face)
+  const pageMatrix = calculatePageMatrix(pageX, originRight, pageRotation)
+  const { theta, radius } = calculateThetaAndRadius(progress)
+
+  let radian = 0
+  let dRadian = theta / props.nPolygons
+  let rotate = originRight ? (-theta / Math.PI) * 180 + (dRadian / 2 / Math.PI) * 180 : (dRadian / 2 / Math.PI) * 180
+
+  let dRotate = (dRadian / Math.PI) * 180
   if (face === 'back') {
     rotate = -rotate
     dRotate = -dRotate
@@ -601,27 +622,18 @@ const makePolygonArray = (face) => {
   minX.value = Infinity
   maxX.value = -Infinity
   const polygonArray = []
+  const xValues = []
   for (let i = 0; i < props.nPolygons; i++) {
     const bgPos = `${(i / (props.nPolygons - 1)) * 100}% 0px`
-
-    const m = pageMatrix.clone()
+    const transformMatrix = pageMatrix.clone()
     const rad = originRight ? theta - radian : radian
-    let x = Math.sin(rad) * radius
-    if (originRight) {
-      x = pageWidth.value - x
-    }
-    let z = (1 - Math.cos(rad)) * radius
-    if (face === 'back') {
-      z = -z
-    }
+    const { x, z } = calculateXAndZ(rad, radius, originRight, face)
+    transformMatrix.translate3d(x, 0, z)
+    transformMatrix.rotateY(-rotate)
 
-    m.translate3d(x, 0, z)
-    m.rotateY(-rotate)
-
-    const x0 = m.transformX(0)
-    const x1 = m.transformX(polyWidth)
-    maxX.value = Math.max(Math.max(x0, x1), maxX.value)
-    minX.value = Math.min(Math.min(x0, x1), minX.value)
+    const x0 = transformMatrix.transformX(0)
+    const x1 = transformMatrix.transformX(polyWidth)
+    xValues.push(x0, x1)
     const lighting = computeLighting(pageRotation - rotate, dRotate)
     radian += dRadian
     rotate += dRotate
@@ -630,11 +642,12 @@ const makePolygonArray = (face) => {
       image,
       lighting,
       bgPos,
-      m.toString(),
+      transformMatrix.toString(),
       Math.abs(Math.round(z))
     ])
   }
-
+  maxX.value = Math.max(...xValues)
+  minX.value = Math.min(...xValues)
   return polygonArray
 }
 
@@ -716,36 +729,34 @@ const flipStart = (direction, auto) => {
 }
 
 const flipAuto = (ease) => {
-  const t0 = Date.now()
+  const startTime = Date.now()
   const duration = props.flipDuration * (1 - flip.progress)
   const startRatio = flip.progress
   flip.auto = true
   emit(`flip-${flip.direction}-start`, page.value)
   const animate = () => {
-    requestAnimationFrame(() => {
-      const t = Date.now() - t0
-      let ratio = startRatio + t / duration
-      ratio = ratio > 1 ? 1 : ratio
-      flip.progress = ease ? easeInOut(ratio) : ratio
-      if (ratio < 1) {
-        animate()
+    const elapsedTime = Date.now() - startTime
+    let ratio = startRatio + elapsedTime / duration
+    ratio = ratio > 1 ? 1 : ratio
+    flip.progress = ease ? easeInOut(ratio) : ratio
+    if (ratio < 1) {
+      requestAnimationFrame(animate)
+    } else {
+      if (flip.direction !== props.forwardDirection) {
+        currentPage.value -= displayedPages.value
       } else {
-        if (flip.direction !== props.forwardDirection) {
-          currentPage.value -= displayedPages.value
-        } else {
-          currentPage.value += displayedPages.value
-        }
-        emit(`flip-${flip.direction}-end`, page.value)
-        if (displayedPages.value === 1 && flip.direction === props.forwardDirection) {
-          flip.direction = null
-        } else {
-          onImageLoad(1, () => {
-            flip.direction = null
-          })
-        }
-        flip.auto = false
+        currentPage.value += displayedPages.value
       }
-    })
+      emit(`flip-${flip.direction}-end`, page.value)
+      if (displayedPages.value === 1 && flip.direction === props.forwardDirection) {
+        flip.direction = null
+      } else {
+        onImageLoad(1, () => {
+          flip.direction = null
+        })
+      }
+      flip.auto = false
+    }
   }
   animate()
 }
@@ -884,34 +895,23 @@ const swipeMove = (touch) => {
   if (!touchStartX.value) return
   const x = touch.pageX - touchStartX.value
   const y = touch.pageY - touchStartY.value
-  maxMove.value = Math.max(maxMove.value, Math.abs(x))
-  maxMove.value = Math.max(maxMove.value, Math.abs(y))
+  maxMove.value = Math.max(maxMove.value, Math.abs(x), Math.abs(y))
   if (zoom.value > 1) {
     dragScroll(x, y)
     return
   }
-  if (!props.dragToFlip) return
-  if (Math.abs(y) > Math.abs(x)) return
+  if (!props.dragToFlip || Math.abs(y) > Math.abs(x)) return
   activeCursor.value = 'grabbing'
-  if (x > 0) {
-    if (flip.direction === null && canFlipLeft.value && x >= props.swipeMin) {
-      flipStart('left', false)
-    }
-    if (flip.direction === 'left') {
-      flip.progress = x / pageWidth.value
-      if (flip.progress > 1) {
-        flip.progress = 1
-      }
-    }
-  } else {
-    if (flip.direction === null && canFlipRight.value && x <= -props.swipeMin) {
-      flipStart('right', false)
-    }
-    if (flip.direction === 'right') {
-      flip.progress = -x / pageWidth.value
-      if (flip.progress > 1) {
-        flip.progress = 1
-      }
+  const direction = x > 0 ? 'left' : 'right'
+  const canFlip = x > 0 ? canFlipLeft.value : canFlipRight.value
+  const swipeMin = x > 0 ? props.swipeMin : -props.swipeMin
+  if (flip.direction === null && canFlip && x >= swipeMin) {
+    flipStart(direction, false)
+  }
+  if (flip.direction === direction) {
+    flip.progress = Math.abs(x) / pageWidth.value
+    if (flip.progress > 1) {
+      flip.progress = 1
     }
   }
   return true
@@ -1035,15 +1035,9 @@ const preloadImages = (hiRes = false) => {
 
 const goToPage = (p) => {
   if (p === null || p === page.value) return
-  if (props.pages[0] === null) {
-    if (displayedPages.value === 2 && p === 1) {
-      currentPage.value = 0
-    } else {
-      currentPage.value = p
-    }
-  } else {
-    currentPage.value = p - 1
-  }
+
+  currentPage.value = props.pages[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1
+
   minX.value = Infinity
   maxX.value = -Infinity
   currentCenterOffset.value = centerOffset.value

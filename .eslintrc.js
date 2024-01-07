@@ -35,6 +35,7 @@ module.exports = {
     'vue/html-self-closing': 'off',
     'vue/max-attributes-per-line': 'off',
     'vue/multi-word-component-names': 0,
+    'object-property-newline': 'off',
     'object-curly-spacing': ['error', 'always'],
     quotes: [
       'error',
@@ -79,7 +80,6 @@ module.exports = {
         }
       }
     ],
-    'object-property-newline': 'error',
     'space-before-blocks': ['error', 'always'],
     'keyword-spacing': 'error',
     'key-spacing': 'error'
