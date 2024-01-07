@@ -1,0 +1,82 @@
+{
+  "name": "vue3-flipbook",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "3D page flip effect for Vue.js",
+  "homepage": "https://ts1.github.io/flipbook-vue/",
+  "author": "Takeshi Sone <takeshi.sone@gmail.com> (https://github.com/ts1)",
+  "repository": "github:ts1/flipbook-vue",
+  "keywords": [
+    "vue",
+    "vue3",
+    "flipbook",
+    "component",
+    "book",
+    "page",
+    "flip",
+    "turn",
+    "3d"
+  ],
+  "module": "dist/flipbook.mjs",
+  "main": "dist/flipbook.cjs.js",
+  "types": "types/flipbook.d.ts",
+  "unpkg": "dist/flipbook.min.js",
+  "exports": {
+    ".": {
+      "import": "./dist/flipbook.mjs",
+      "require": "./dist/flipbook.cjs.js",
+      "browser": "./dist/flipbook.min.js",
+      "types": "./types/flipbook.d.ts"
+    },
+    "./vue2": {
+      "import": "./dist/vue2/flipbook.mjs",
+      "require": "./dist/vue2/flipbook.cjs.js",
+      "browser": "./dist/vue2/flipbook.min.js"
+    }
+  },
+  "scripts": {
+    "lint": "eslint --fix \"packages/*/src/**/*.{js,vue}\"",
+    "format": "prettier --write --loglevel warn \"packages/*/src/**/*.{js,ts,json,css,less,scss,vue,html,md}\"",
+    "style": "stylelint --fix 'packages/*/src/**/*.{css,scss,vue}'"
+  },
+  "devDependencies": {
+    "postcss-html": "^1.5.0",
+    "eslint": "8.56.0",
+    "eslint-plugin-storybook": "^0.6.15",
+    "eslint-plugin-vue": "^9.19.2",
+    "stylelint": "15.11.0",
+    "stylelint-config-recommended": "^14.0.0",
+    "stylelint-config-recommended-vue": "^1.5.0",
+    "stylelint-config-standard": "^35.0.0",
+    "vue-eslint-parser": "^9.3.2",
+    "gh-pages": "^6.1.0",
+    "husky": "4.3.8",
+    "prettier": "^3.1.1",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.{js,vue}": [
+      "bun eslint --fix",
+      "bash -c 'bun typecheck'"
+    ],
+    "*.{css,vue}": "stylelint --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "bun typecheck && bun lint-staged && bun run test"
+    }
+  },
+  "browserslist": [
+    "> 0.25%",
+    "not dead"
+  ],
+  "workspaces": [
+    "packages/examples",
+    "packages/storybook",
+    "packages/Flipbook"
+  ],
+  "files": [
+    "dist",
+    "types"
+  ]
+}

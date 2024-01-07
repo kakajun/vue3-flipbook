@@ -1,0 +1,33 @@
+import { fileURLToPath, URL } from 'node:url'
+
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+    vue(),
+  ],
+  build: {
+    lib: {
+      entry: 'src/index.js',
+      name: 'Vue3Flipbook'
+    },
+    rollupOptions: {
+      external: [ "vue"],
+      output: {
+        globals: {
+          vue: "Vue",
+        },
+        exports: "named",
+        generatedCode: "es5",
+      }
+    },
+    sourcemap: true,
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  }
+})

@@ -1,0 +1,49 @@
+{
+  "name": "vue3-flipbook",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "A vue3 wrapper for turn.js and bookblock libraries.",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "flipbook",
+    "component",
+    "book",
+    "page",
+    "flip",
+    "turn",
+    "3d"
+  ],
+  "author": {
+    "name": "kakajun",
+    "email": "253495832@qq.com",
+    "url": "https://github.com/kakajun"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://https://github.com/kakajun/vue3-flipbook"
+  },
+
+
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+
+  "main": "./dist/flipbook.mjs.js",
+
+  "module": "./dist/flipbook.mjs.js",
+
+  "dependencies": {
+    "vue": "^3.3.11",
+    "vue-material-design-icons": "^5.1.2"
+  },
+  "devDependencies": {
+    "vite": "^5.0.10",
+    "rematrix": "^0.7.2"
+  }
+}

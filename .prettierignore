@@ -1,0 +1,9 @@
+/node_modules/**
+/dist/
+/dist*
+/public/*
+/docs/*
+/vite.config.ts
+/docs/**/*
+CHANGELOG
+panzoom.min.4.5.1.js

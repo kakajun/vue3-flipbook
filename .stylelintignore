@@ -1,0 +1,7 @@
+/dist/*
+/public/*
+public/*
+/dist*
+/assets*
+/src/types/env.d.ts
+/docs/**/*
