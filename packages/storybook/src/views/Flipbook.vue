@@ -838,16 +838,16 @@ const didLoadImage = (ev) => {
 const zoomIn = (zoomAt = null) => {
   if (!canZoomIn.value) return
   zoomIndex.value += 1
-  zoomTo(zooms_[zoomIndex.value], zoomAt)
+  zoomTo(zooms_.value[zoomIndex.value], zoomAt)
 }
 
 const zoomOut = (zoomAt = null) => {
   if (!canZoomOut.value) return
   zoomIndex.value -= 1
-  zoomTo(zooms_[zoomIndex.value], zoomAt)
+  zoomTo(zooms_.value[zoomIndex.value], zoomAt)
 }
 
-const zoomTo = (zoom, zoomAt = null) => {
+const zoomTo = (pzoom, zoomAt = null) => {
   const viewport = refViewport.value
   let fixedX, fixedY
   if (zoomAt) {
@@ -859,7 +859,7 @@ const zoomTo = (zoom, zoomAt = null) => {
     fixedY = viewport.clientHeight / 2
   }
   const start = zoom.value
-  const end = zoom
+  const end = pzoom
   const startX = viewport.scrollLeft
   const startY = viewport.scrollTop
   const containerFixedX = fixedX + startX
@@ -869,7 +869,7 @@ const zoomTo = (zoom, zoomAt = null) => {
 
   const t0 = Date.now()
   zooming.value = true
-  emit('zoom-start', zoom)
+  emit('zoom-start', pzoom)
   const animate = () => {
     requestAnimationFrame(() => {
       const t = Date.now() - t0
@@ -882,9 +882,9 @@ const zoomTo = (zoom, zoomAt = null) => {
       if (t < props.zoomDuration) {
         animate()
       } else {
-        emit('zoom-end', zoom)
+        emit('zoom-end', pzoom)
         zooming.value = false
-        zoom.value = zoom
+        zoom.value = pzoom
         scrollLeft.value = endX
         scrollTop.value = endY
       }
@@ -898,7 +898,7 @@ const zoomTo = (zoom, zoomAt = null) => {
 
 const zoomAt = (zoomAt) => {
   zoomIndex.value = (zoomIndex.value + 1) % zooms_.value.length
-  zoomTo(zooms_[zoomIndex.value], zoomAt)
+  zoomTo(zooms_.value[zoomIndex.value], zoomAt)
 }
 
 const swipeStart = (touch) => {
