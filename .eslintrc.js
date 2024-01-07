@@ -32,7 +32,8 @@ module.exports = {
     'eol-last': ['error', 'always'],
     'no-console': 'warn',
     'no-debugger': 'warn',
-
+    'vue/html-self-closing': 'off',
+    'vue/max-attributes-per-line': 'off',
     'vue/multi-word-component-names': 0,
     'object-curly-spacing': ['error', 'always'],
     quotes: [
