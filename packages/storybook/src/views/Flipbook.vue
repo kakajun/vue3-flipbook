@@ -19,7 +19,7 @@
       class="viewport"
       :class="{
         zoom: zooming || zoom > 1,
-        'drag-to-scroll': dragToScroll
+        'drag-to-scroll': !hasTouchEvents
       }"
       :style="{ cursor: cursor == 'grabbing' ? 'grabbing' : 'auto' }"
       @touchmove="onTouchMove"
@@ -252,22 +252,12 @@ const scrollLeft = ref(0)
 const scrollTop = ref(0)
 const loadedImages = ref({})
 
-const IE = computed(() => typeof navigator !== 'undefined' && /Trident/.test(navigator.userAgent))
-
 const canFlipLeft = computed(() => {
-  if (props.forwardDirection === 'left') {
-    return canGoForward.value
-  } else {
-    return canGoBack.value
-  }
+  return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value
 })
 
 const canFlipRight = computed(() => {
-  if (props.forwardDirection === 'right') {
-    return canGoForward.value
-  } else {
-    return canGoBack.value
-  }
+  return props.forwardDirection === 'right' ? canGoForward.value : canGoBack.value
 })
 
 const canZoomIn = computed(() => !zooming.value && zoomIndex.value < zooms_.value.length - 1)
@@ -275,19 +265,11 @@ const canZoomIn = computed(() => !zooming.value && zoomIndex.value < zooms_.valu
 const canZoomOut = computed(() => !zooming.value && zoomIndex.value > 0)
 
 const numPages = computed(() => {
-  if (props.pages[0] === null) {
-    return props.pages.length - 1
-  } else {
-    return props.pages.length
-  }
+  return props.pages[0] === null ? props.pages.length - 1 : props.pages.length
 })
 
 const page = computed(() => {
-  if (props.pages[0] !== null) {
-    return currentPage.value + 1
-  } else {
-    return Math.max(1, currentPage.value)
-  }
+  return props.pages[0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
 })
 
 const zooms_ = computed(() => props.zooms || [1])
@@ -304,19 +286,15 @@ const canGoBack = computed(
 )
 
 const leftPage = computed(() => {
-  if (props.forwardDirection === 'right' || displayedPages.value === 1) {
-    return firstPage.value
-  } else {
-    return secondPage.value
-  }
+  return props.forwardDirection === 'right' || displayedPages.value === 1
+    ? firstPage.value
+    : secondPage.value
 })
 
 const rightPage = computed(() => {
-  if (props.forwardDirection === 'right' || displayedPages.value === 1) {
-    return secondPage.value
-  } else {
-    return firstPage.value
-  }
+  return props.forwardDirection === 'right' || displayedPages.value === 1
+    ? secondPage.value
+    : firstPage.value
 })
 
 const showLeftPage = computed(() => pageUrl(leftPage.value))
@@ -326,8 +304,6 @@ const showRightPage = computed(() => pageUrl(rightPage.value) && displayedPages.
 const cursor = computed(() => {
   if (activeCursor.value) {
     return activeCursor.value
-  } else if (IE.value) {
-    return 'auto'
   } else if (props.clickToZoom && canZoomIn.value) {
     return 'zoom-in'
   } else if (props.clickToZoom && canZoomOut.value) {
@@ -364,17 +340,11 @@ const polygonWidth = computed(() => {
   return w + 'px'
 })
 
-const polygonHeight = computed(() => {
-  return pageHeight.value + 'px'
-})
+const polygonHeight = computed(() => pageHeight.value + 'px')
 
-const polygonBgSize = computed(() => {
-  return `${pageWidth.value}px ${pageHeight.value}px`
-})
+const polygonBgSize = computed(() => `${pageWidth.value}px ${pageHeight.value}px`)
 
-const polygonArray = computed(() => {
-  return makePolygonArray('front').concat(makePolygonArray('back'))
-})
+const polygonArray = computed(() => makePolygonArray('front').concat(makePolygonArray('back')))
 const boundingLeft = computed(() => {
   if (displayedPages.value === 1) {
     return xMargin.value
@@ -412,13 +382,7 @@ const centerOffset = computed(() => {
   return retval
 })
 
-const centerOffsetSmoothed = computed(() => {
-  return Math.round(currentCenterOffset.value)
-})
-
-const dragToScroll = computed(() => {
-  return !hasTouchEvents.value
-})
+const centerOffsetSmoothed = computed(() => Math.round(currentCenterOffset.value))
 
 const scrollLeftMin = computed(() => {
   let w = (boundingRight.value - boundingLeft.value) * zoom.value
@@ -687,7 +651,7 @@ const computeLighting = (rot, dRotate) => {
     )
   }
 
-  if (props.gloss > 0 && !IE.value) {
+  if (props.gloss > 0) {
     const DEG = 30
     const POW = 200
     const specular = lightingPoints.map((d) =>
@@ -874,7 +838,7 @@ const zoomTo = (pzoom, zoomAt = null) => {
     requestAnimationFrame(() => {
       const t = Date.now() - t0
       let ratio = t / props.zoomDuration
-      ratio = ratio > 1 || IE.value ? 1 : ratio
+      ratio = ratio > 1 || ratio
       ratio = easeInOut(ratio)
       zoom.value = start + (end - start) * ratio
       scrollLeft.value = startX + (endX - startX) * ratio
@@ -1036,7 +1000,7 @@ const dragScroll = (x, y) => {
 }
 
 const onWheel = (ev) => {
-  if (props.wheel === 'scroll' && zoom.value > 1 && dragToScroll.value) {
+  if (props.wheel === 'scroll' && zoom.value > 1 && !hasTouchEvents.value) {
     scrollLeft.value = refViewport.value.scrollLeft + ev.deltaX
     scrollTop.value = refViewport.value.scrollTop + ev.deltaY
     if (ev.cancelable) {
@@ -1128,23 +1092,11 @@ watch(centerOffset, () => {
 })
 
 watch(scrollLeftLimited, (val) => {
-  if (IE.value) {
-    requestAnimationFrame(() => {
-      refViewport.value.scrollLeft = val
-    })
-  } else {
-    refViewport.value.scrollLeft = val
-  }
+  refViewport.value.scrollLeft = val
 })
 
 watch(scrollTopLimited, (val) => {
-  if (IE.value) {
-    requestAnimationFrame(() => {
-      refViewport.value.scrollTop = val
-    })
-  } else {
-    refViewport.value.scrollTop = val
-  }
+  refViewport.value.scrollTop = val
 })
 
 watch(props.pages, (after, before) => {
