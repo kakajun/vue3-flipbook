@@ -1,8 +1,5 @@
 /** @type { import('@storybook/vue3-vite').StorybookConfig } */
-const path = require('path')
-function resolve(dir) {
-  return path.join(__dirname, dir)
-}
+import { mergeConfig } from 'vite';
 
 import { fileURLToPath, URL } from 'node:url'
 const config = {

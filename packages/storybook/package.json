@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006  --ci",
     "build-storybook": "storybook build",
     "test": "vitest",
     "coverage": "vitest run --coverage"
