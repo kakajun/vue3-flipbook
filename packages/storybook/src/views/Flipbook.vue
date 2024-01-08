@@ -266,7 +266,7 @@ const {
   scrollTop
 } = useZoom(props, emit, refViewport, preloadImages)
 const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, onImageLoad, didLoadImage } =
-  useImageLoad(props, currentPage)
+  useImageLoad(props, preloadImages)
 
 const canFlipLeft = computed(() => {
   return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value
