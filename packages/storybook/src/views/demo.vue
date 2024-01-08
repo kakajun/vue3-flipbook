@@ -1,9 +1,5 @@
 <template>
-  <div
-id="app"
-:class="{ 'has-mouse': hasMouse }"
-@touchstart="hasMouse = false"
->
+  <div id="app" :class="{ 'has-mouse': hasMouse }" @touchstart="hasMouse = false">
     <Ribbon />
     <Flipbook
       v-slot="flipbook"
@@ -45,10 +41,7 @@ id="app"
     </Flipbook>
     <p class="credit">
       Photos from
-      <a
-href="https://unsplash.com/"
-target="_blank"
->Unsplash</a>.
+      <a href="https://unsplash.com/" target="_blank">Unsplash</a>.
     </p>
   </div>
 </template>
@@ -101,7 +94,12 @@ onMounted(async () => {
     if (ev.key === 'ArrowLeft' && flipbook.canFlipLeft) flipbook.flipLeft()
     if (ev.key === 'ArrowRight' && flipbook.canFlipRight) flipbook.flipRight()
   })
+  getPages()
+  window.addEventListener('hashchange', setPageFromHash)
+  setPageFromHash()
+})
 
+const getPages = async () => {
   const importAll = async (r) => {
     const images = []
     for (const path in r) {
@@ -111,13 +109,10 @@ onMounted(async () => {
   }
   const images = import.meta.glob('@/assets/images/*.jpg')
   const imagesLarge = import.meta.glob('@/assets/images-large/*.jpg')
-
   pages.value = [null, ...(await importAll(images))]
   pagesHiRes.value = [null, ...(await importAll(imagesLarge))]
+}
 
-  window.addEventListener('hashchange', setPageFromHash)
-  setPageFromHash()
-})
 </script>
 
 <style>
