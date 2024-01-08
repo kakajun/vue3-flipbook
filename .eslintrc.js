@@ -67,19 +67,7 @@ module.exports = {
         ignorePattern: 'd="([\\s\\S]*?)"'
       }
     ],
-    'object-curly-newline': [
-      'error',
-      {
-        ObjectExpression: {
-          multiline: true,
-          minProperties: 1
-        },
-        ImportDeclaration: {
-          multiline: true,
-          minProperties: 5
-        }
-      }
-    ],
+    'object-curly-newline': 'off',
     'space-before-blocks': ['error', 'always'],
     'keyword-spacing': 'error',
     'key-spacing': 'error'

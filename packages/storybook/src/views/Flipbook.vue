@@ -240,6 +240,19 @@ const animatingCenter = ref(false)
 const startScrollLeft = ref(0)
 const startScrollTop = ref(0)
 
+const preloadImages = (hiRes = false) => {
+  for (let i = currentPage.value - 3; i <= currentPage.value + 3; i++) {
+    pageUrlLoading(i) // this preloads image
+  }
+  if (hiRes) {
+    for (let i = currentPage.value; i < currentPage.value + displayedPages.value; i++) {
+      const src = props.pagesHiRes[i]
+      if (src) {
+        new Image().src = src
+      }
+    }
+  }
+}
 const {
   zoom,
   zooming,
@@ -251,17 +264,9 @@ const {
   onWheel,
   scrollLeft,
   scrollTop
-} = useZoom(props, emit, refViewport)
-const {
-  imageWidth,
-  imageHeight,
-  pageUrl,
-  loadImage,
-  preloadImages,
-  pageUrlLoading,
-  onImageLoad,
-  didLoadImage
-} = useImageLoad(props, currentPage, displayedPages)
+} = useZoom(props, emit, refViewport, preloadImages)
+const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, onImageLoad, didLoadImage } =
+  useImageLoad(props, currentPage)
 
 const canFlipLeft = computed(() => {
   return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value

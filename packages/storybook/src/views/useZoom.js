@@ -1,7 +1,7 @@
 import { ref, reactive, defineEmits, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { easeInOut } from './utils.js'
 
-export default function useZoom(props, emit, refViewport) {
+export default function useZoom(props, emit, refViewport, preloadImages) {
   const zoom = ref(1)
   const zoomIndex = ref(0)
 
@@ -65,7 +65,7 @@ export default function useZoom(props, emit, refViewport) {
     }
     animate()
     if (end > 1) {
-      // preloadImages(true)
+      preloadImages(true)
     }
   }
 

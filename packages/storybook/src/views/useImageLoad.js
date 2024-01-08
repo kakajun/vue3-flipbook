@@ -1,7 +1,7 @@
 import { ref, reactive, defineEmits, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
 
-export default function useImageLoad(props, currentPage, displayedPages) {
+export default function useImageLoad(props, preloadImages) {
   const { zoom, zooming } = useZoom(props)
 
   const loadedImages = ref({})
@@ -44,20 +44,6 @@ export default function useImageLoad(props, currentPage, displayedPages) {
     return url && loadImage(url)
   }
 
-  const preloadImages = (hiRes = false) => {
-    for (let i = currentPage.value - 3; i <= currentPage.value + 3; i++) {
-      pageUrlLoading(i) // this preloads image
-    }
-    if (hiRes) {
-      for (let i = currentPage.value; i < currentPage.value + displayedPages.value; i++) {
-        const src = props.pagesHiRes[i]
-        if (src) {
-          new Image().src = src
-        }
-      }
-    }
-  }
-
   const onImageLoad = (trigger, cb) => {
     nImageLoad.value = 0
     nImageLoadTrigger.value = trigger
@@ -82,7 +68,6 @@ export default function useImageLoad(props, currentPage, displayedPages) {
     imageHeight,
     pageUrl,
     loadImage,
-    preloadImages,
     pageUrlLoading,
     onImageLoad,
     didLoadImage
