@@ -1,11 +1,11 @@
 {
   "name": "vue3-flipbook",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "license": "MIT",
   "description": "3D page flip effect for Vue.js",
-  "homepage": "https://ts1.github.io/flipbook-vue/",
-  "author": "Takeshi Sone <takeshi.sone@gmail.com> (https://github.com/ts1)",
-  "repository": "github:ts1/flipbook-vue",
+  "homepage": "https://github.com/kakajun/vue3-flipbook",
+  "author": "kakajun <253495832@qq.com> (https://github.com/kakajun)",
+  "repository": "github:kakajun/vue3-flipbook",
   "keywords": [
     "vue",
     "vue3",
@@ -35,9 +35,15 @@
     }
   },
   "scripts": {
+    "dev": "npm run storybook --prefix ./packages/storybook",
+    "storybook": "npm run storybook --prefix ./packages/storybook",
     "lint": "eslint --fix \"packages/*/src/**/*.{js,vue}\"",
     "format": "prettier --write --loglevel warn \"packages/*/src/**/*.{js,ts,json,css,less,scss,vue,html,md}\"",
-    "style": "stylelint --fix 'packages/*/src/**/*.{css,scss,vue}'"
+    "style": "stylelint --fix 'packages/*/src/**/*.{css,scss,vue}'",
+    "build": "npm run build --prefix ./packages/Flipbook",
+    "build:storybook": "npm run build-storybook --prefix ./packages/storybook",
+    "deploy:storybook": "npm run deploy-storybook --prefix ./packages/storybook",
+    "test": "npm run test --prefix ./packages/Flipbook"
   },
   "devDependencies": {
     "postcss-html": "^1.5.0",
