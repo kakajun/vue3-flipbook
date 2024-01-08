@@ -30,7 +30,7 @@
       @pointerup="onPointerUp"
       @pointercancel="onPointerUp"
       @mouseup="onMouseUp"
-      @wheel="onWheel"
+      @wheel="onWheel($event, hasTouchEvents)"
     >
       <div class="flipbook-container" :style="{ transform: `scale(${zoom})` }">
         <div
@@ -114,8 +114,10 @@
 <script setup>
 import Matrix from './matrix'
 import spinner from './spinner.svg'
-import { calculatePageRotation } from './utils.js'
+import { calculatePageRotation, easeInOut } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import useZoom from './useZoom'
+import useImageLoad from './useImageLoad'
 const emit = defineEmits([
   'flip-left-start',
   'flip-left-end',
@@ -124,15 +126,7 @@ const emit = defineEmits([
   'zoom-start',
   'zoom-end'
 ])
-const easeIn = (x) => Math.pow(x, 2)
-const easeOut = (x) => 1 - easeIn(1 - x)
-const easeInOut = (x) => {
-  if (x < 0.5) {
-    return easeIn(x * 2) / 2
-  } else {
-    return 0.5 + easeOut((x - 0.5) * 2) / 2
-  }
-}
+
 const props = defineProps({
   pages: {
     type: Array,
@@ -213,20 +207,16 @@ const props = defineProps({
     default: 'scroll'
   }
 })
+
 const viewWidth = ref(0)
 const viewHeight = ref(0)
-const imageWidth = ref(null)
-const imageHeight = ref(null)
+
 const displayedPages = ref(1)
-const nImageLoad = ref(0)
-const nImageLoadTrigger = ref(0)
-const imageLoadCallback = ref(null)
+
 const currentPage = ref(0)
 const firstPage = ref(0)
 const secondPage = ref(1)
-const zoomIndex = ref(0)
-const zoom = ref(1)
-const zooming = ref(false)
+
 const touchStartX = ref(null)
 const touchStartY = ref(null)
 const maxMove = ref(0)
@@ -249,9 +239,29 @@ const currentCenterOffset = ref(null)
 const animatingCenter = ref(false)
 const startScrollLeft = ref(0)
 const startScrollTop = ref(0)
-const scrollLeft = ref(0)
-const scrollTop = ref(0)
-const loadedImages = ref({})
+
+const {
+  zoom,
+  zooming,
+  canZoomIn,
+  canZoomOut,
+  zoomIn,
+  zoomOut,
+  zoomAt,
+  onWheel,
+  scrollLeft,
+  scrollTop
+} = useZoom(props, emit, refViewport)
+const {
+  imageWidth,
+  imageHeight,
+  pageUrl,
+  loadImage,
+  preloadImages,
+  pageUrlLoading,
+  onImageLoad,
+  didLoadImage
+} = useImageLoad(props, currentPage, displayedPages)
 
 const canFlipLeft = computed(() => {
   return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value
@@ -261,10 +271,6 @@ const canFlipRight = computed(() => {
   return props.forwardDirection === 'right' ? canGoForward.value : canGoBack.value
 })
 
-const canZoomIn = computed(() => !zooming.value && zoomIndex.value < zooms_.value.length - 1)
-
-const canZoomOut = computed(() => !zooming.value && zoomIndex.value > 0)
-
 const numPages = computed(() => {
   return props.pages[0] === null ? props.pages.length - 1 : props.pages.length
 })
@@ -272,8 +278,6 @@ const numPages = computed(() => {
 const page = computed(() => {
   return props.pages[0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
 })
-
-const zooms_ = computed(() => props.zooms || [1])
 
 const canGoForward = computed(
   () => !flip.direction && currentPage.value < props.pages.length - displayedPages.value
@@ -315,22 +319,6 @@ const cursor = computed(() => {
     return 'auto'
   }
 })
-
-const pageScale = computed(() => {
-  const vw = viewWidth.value / displayedPages.value
-  const xScale = vw / imageWidth.value
-  const yScale = viewHeight.value / imageHeight.value
-  const scale = xScale < yScale ? xScale : yScale
-  if (scale < 1) {
-    return scale
-  } else {
-    return 1
-  }
-})
-
-const pageWidth = computed(() => Math.round(imageWidth.value * pageScale.value))
-
-const pageHeight = computed(() => Math.round(imageHeight.value * pageScale.value))
 
 const xMargin = computed(() => (viewWidth.value - pageWidth.value * displayedPages.value) / 2)
 const yMargin = computed(() => (viewHeight.value - pageHeight.value) / 2)
@@ -424,20 +412,12 @@ const scrollTopMax = computed(() => {
   }
 })
 
-const scrollLeftLimited = computed(() => {
-  return Math.min(scrollLeftMax.value, Math.max(scrollLeftMin.value, scrollLeft.value))
-})
-
-const scrollTopLimited = computed(() => {
-  return Math.min(scrollTopMax.value, Math.max(scrollTopMin.value, scrollTop.value))
-})
-
 onMounted(() => {
   window.addEventListener('resize', onResize, {
     passive: true
   })
   onResize()
-  zoom.value = zooms_.value[0]
+  zoom.value = props.zooms[0]
   goToPage(props.startPage)
 })
 
@@ -446,6 +426,22 @@ onBeforeUnmount(() => {
     passive: true
   })
 })
+
+const pageScale = computed(() => {
+  const vw = viewWidth.value / displayedPages.value
+  const xScale = vw / imageWidth.value
+  const yScale = viewHeight.value / imageHeight.value
+  const scale = xScale < yScale ? xScale : yScale
+  if (scale < 1) {
+    return scale
+  } else {
+    return 1
+  }
+})
+
+const pageWidth = computed(() => Math.round(imageWidth.value * pageScale.value))
+
+const pageHeight = computed(() => Math.round(imageHeight.value * pageScale.value))
 
 const onResize = () => {
   const viewport = refViewport.value
@@ -465,22 +461,6 @@ const fixFirstPage = () => {
   if (displayedPages.value === 1 && currentPage.value === 0 && props.pages.length && !pageUrl(0)) {
     currentPage.value++
   }
-}
-
-const pageUrl = (page, hiRes = false) => {
-  if (hiRes && zoom.value > 1 && !zooming.value) {
-    const url = props.pagesHiRes[page]
-    return url ? url : null
-  }
-  return props.pages[page] || null
-}
-
-const pageUrlLoading = (page, hiRes = false) => {
-  const url = pageUrl(page, hiRes)
-  if (hiRes && zoom.value > 1 && !zooming.value) {
-    return url
-  }
-  return url && loadImage(url)
 }
 
 const flipLeft = () => {
@@ -611,7 +591,9 @@ const makePolygonArray = (face) => {
 
   let radian = 0
   let dRadian = theta / props.nPolygons
-  let rotate = originRight ? (-theta / Math.PI) * 180 + (dRadian / 2 / Math.PI) * 180 : (dRadian / 2 / Math.PI) * 180
+  let rotate = originRight
+    ? (-theta / Math.PI) * 180 + (dRadian / 2 / Math.PI) * 180
+    : (dRadian / 2 / Math.PI) * 180
 
   let dRotate = (dRadian / Math.PI) * 180
   if (face === 'back') {
@@ -791,90 +773,26 @@ const flipRevert = () => {
   animate()
 }
 
-const onImageLoad = (trigger, cb) => {
-  nImageLoad.value = 0
-  nImageLoadTrigger.value = trigger
-  imageLoadCallback.value = cb
+const dragScroll = (x, y) => {
+  scrollLeft.value = startScrollLeft.value - x
+  scrollTop.value = startScrollTop.value - y
 }
 
-const didLoadImage = (ev) => {
-  if (imageWidth.value === null) {
-    imageWidth.value = (ev.target || ev.path[0]).naturalWidth
-    imageHeight.value = (ev.target || ev.path[0]).naturalHeight
-    preloadImages()
-  }
-  if (!imageLoadCallback.value) return
-  if (++nImageLoad.value >= nImageLoadTrigger.value) {
-    imageLoadCallback.value()
-    imageLoadCallback.value = null
-  }
-}
+const scrollLeftLimited = computed(() => {
+  return Math.min(scrollLeftMax.value, Math.max(scrollLeftMin.value, scrollLeft.value))
+})
 
-const zoomIn = (zoomAt = null) => {
-  if (!canZoomIn.value) return
-  zoomIndex.value += 1
-  zoomTo(zooms_.value[zoomIndex.value], zoomAt)
-}
+const scrollTopLimited = computed(() => {
+  return Math.min(scrollTopMax.value, Math.max(scrollTopMin.value, scrollTop.value))
+})
 
-const zoomOut = (zoomAt = null) => {
-  if (!canZoomOut.value) return
-  zoomIndex.value -= 1
-  zoomTo(zooms_.value[zoomIndex.value], zoomAt)
-}
+watch(scrollLeftLimited, (val) => {
+  refViewport.value.scrollLeft = val
+})
 
-const zoomTo = (pzoom, zoomAt = null) => {
-  const viewport = refViewport.value
-  let fixedX, fixedY
-  if (zoomAt) {
-    const rect = viewport.getBoundingClientRect()
-    fixedX = zoomAt.pageX - rect.left
-    fixedY = zoomAt.pageY - rect.top
-  } else {
-    fixedX = viewport.clientWidth / 2
-    fixedY = viewport.clientHeight / 2
-  }
-  const start = zoom.value
-  const end = pzoom
-  const startX = viewport.scrollLeft
-  const startY = viewport.scrollTop
-  const containerFixedX = fixedX + startX
-  const containerFixedY = fixedY + startY
-  const endX = (containerFixedX / start) * end - fixedX
-  const endY = (containerFixedY / start) * end - fixedY
-
-  const t0 = Date.now()
-  zooming.value = true
-  emit('zoom-start', pzoom)
-  const animate = () => {
-    requestAnimationFrame(() => {
-      const t = Date.now() - t0
-      let ratio = t / props.zoomDuration
-      ratio = ratio > 1 || ratio
-      ratio = easeInOut(ratio)
-      zoom.value = start + (end - start) * ratio
-      scrollLeft.value = startX + (endX - startX) * ratio
-      scrollTop.value = startY + (endY - startY) * ratio
-      if (t < props.zoomDuration) {
-        animate()
-      } else {
-        emit('zoom-end', pzoom)
-        zooming.value = false
-        zoom.value = pzoom
-        scrollLeft.value = endX
-        scrollTop.value = endY
-      }
-    })
-  }
-  animate()
-  if (end > 1) {
-    preloadImages(true)
-  }
-}
-
-const zoomAt = (zoomAt) => {
-  zoomIndex.value = (zoomIndex.value + 1) % zooms_.value.length
-  zoomTo(zooms_.value[zoomIndex.value], zoomAt)
-}
+watch(scrollTopLimited, (val) => {
+  refViewport.value.scrollTop = val
+})
 
 const swipeStart = (touch) => {
   touchStartX.value = touch.pageX
@@ -994,45 +912,6 @@ const onMouseUp = (ev) => {
   }
 }
 
-const dragScroll = (x, y) => {
-  scrollLeft.value = startScrollLeft.value - x
-  scrollTop.value = startScrollTop.value - y
-}
-
-const onWheel = (ev) => {
-  if (props.wheel === 'scroll' && zoom.value > 1 && !hasTouchEvents.value) {
-    scrollLeft.value = refViewport.value.scrollLeft + ev.deltaX
-    scrollTop.value = refViewport.value.scrollTop + ev.deltaY
-    if (ev.cancelable) {
-      ev.preventDefault()
-    }
-  }
-
-  if (props.wheel === 'zoom') {
-    if (ev.deltaY >= 100) {
-      zoomOut(ev)
-      ev.preventDefault()
-    } else if (ev.deltaY <= -100) {
-      zoomIn(ev)
-      ev.preventDefault()
-    }
-  }
-}
-
-const preloadImages = (hiRes = false) => {
-  for (let i = currentPage.value - 3; i <= currentPage.value + 3; i++) {
-    pageUrlLoading(i) // this preloads image
-  }
-  if (hiRes) {
-    for (let i = currentPage.value; i < currentPage.value + displayedPages.value; i++) {
-      const src = props.pagesHiRes[i]
-      if (src) {
-        new Image().src = src
-      }
-    }
-  }
-}
-
 const goToPage = (p) => {
   if (p === null || p === page.value) return
 
@@ -1041,23 +920,6 @@ const goToPage = (p) => {
   minX.value = Infinity
   maxX.value = -Infinity
   currentCenterOffset.value = centerOffset.value
-}
-
-const loadImage = (url) => {
-  if (imageWidth.value === null) {
-    return url
-  } else {
-    if (loadedImages.value[url]) {
-      return url
-    } else {
-      const img = new Image()
-      img.onload = () => {
-        loadedImages.value[url] = true
-      }
-      img.src = url
-      return props.loadingImage
-    }
-  }
 }
 
 watch(currentPage, () => {
@@ -1083,14 +945,6 @@ watch(centerOffset, () => {
   }
   animatingCenter.value = true
   animate()
-})
-
-watch(scrollLeftLimited, (val) => {
-  refViewport.value.scrollLeft = val
-})
-
-watch(scrollTopLimited, (val) => {
-  refViewport.value.scrollTop = val
 })
 
 watch(props.pages, (after, before) => {
