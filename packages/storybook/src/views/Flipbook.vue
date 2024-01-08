@@ -17,11 +17,8 @@
     <div
       ref="refViewport"
       class="viewport"
-      :class="{
-        zoom: zooming || zoom > 1,
-        'drag-to-scroll': !hasTouchEvents
-      }"
-      :style="{ cursor: cursor == 'grabbing' ? 'grabbing' : 'auto' }"
+      :class="viewportClass"
+      :style="viewportStyle"
       @touchmove="onTouchMove"
       @pointermove="onPointerMove"
       @mousemove="onMouseMove"
@@ -267,6 +264,15 @@ const {
 } = useZoom(props, emit, refViewport, preloadImages)
 const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, onImageLoad, didLoadImage } =
   useImageLoad(props, preloadImages)
+
+const viewportClass = computed(() => ({
+  zoom: zooming.value || zoom.value > 1,
+  'drag-to-scroll': !hasTouchEvents.value
+}))
+
+const viewportStyle = computed(() => ({
+  cursor: cursor.value == 'grabbing' ? 'grabbing' : 'auto'
+}))
 
 const canFlipLeft = computed(() => {
   return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value

@@ -1,17 +1,40 @@
-import { ref, reactive, defineEmits, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import useImageLoad from './useImageLoad'
+import { easeInOut } from './utils.js'
 export default function usePageNavigation(
   props,
   emit,
   currentPage,
   displayedPages,
   flip,
-  preloadImages
+  firstPage,
+  secondPage
 ) {
-  const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, onImageLoad, didLoadImage } =
-    useImageLoad(props, currentPage)
-    const hasPointerEvents = ref(false)
-    
+  const { pageUrl, onImageLoad } = useImageLoad(props, currentPage)
+
+  const page = computed(() => {
+    return props.pages[0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
+  })
+
+  const canGoForward = computed(
+    () => !flip.direction && currentPage.value < props.pages.length - displayedPages.value
+  )
+
+  const canGoBack = computed(
+    () =>
+      !flip.direction &&
+      currentPage.value >= displayedPages.value &&
+      !(displayedPages.value === 1 && !pageUrl(firstPage.value - 1))
+  )
+
+  const canFlipLeft = computed(() => {
+    return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value
+  })
+
+  const canFlipRight = computed(() => {
+    return props.forwardDirection === 'right' ? canGoForward.value : canGoBack.value
+  })
+
   const flipStart = (direction, auto) => {
     if (direction !== props.forwardDirection) {
       if (displayedPages.value === 1) {
@@ -115,97 +138,12 @@ export default function usePageNavigation(
     }
     animate()
   }
-
-  const dragScroll = (x, y) => {
-    scrollLeft.value = startScrollLeft.value - x
-    scrollTop.value = startScrollTop.value - y
-  }
-
-  const onTouchStart = (ev) => {
-    hasTouchEvents.value = true
-    swipeStart(ev.changedTouches[0])
-  }
-
-  const onTouchMove = (ev) => {
-    if (swipeMove(ev.changedTouches[0])) {
-      ev.preventDefault()
-    }
-  }
-
-  const onTouchEnd = (ev) => {
-    swipeEnd(ev.changedTouches[0])
-  }
-
-  const onPointerDown = (ev) => {
-    hasPointerEvents.value = true
-    if (hasTouchEvents.value) return
-    if (ev.which && ev.which !== 1) return // Ignore right-click
-    swipeStart(ev)
-    try {
-      ev.target.setPointerCapture(ev.pointerId)
-    } catch {
-      // Handle the error silently
-    }
-  }
-
-  const onPointerMove = (ev) => {
-    if (!hasTouchEvents.value) {
-      swipeMove(ev)
-    }
-  }
-
-  const onPointerUp = (ev) => {
-    if (hasTouchEvents.value) return
-    swipeEnd(ev)
-    try {
-      ev.target.releasePointerCapture(ev.pointerId)
-    } catch {
-      // Handle the error silently
-    }
-  }
-
-  const onMouseDown = (ev) => {
-    if (hasTouchEvents.value || hasPointerEvents.value) return
-    if (ev.which && ev.which !== 1) return // Ignore right-click
-    swipeStart(ev)
-  }
-
-  const onMouseMove = (ev) => {
-    if (!hasTouchEvents.value || !hasPointerEvents.value) {
-      swipeMove(ev)
-    }
-  }
-
-  const onMouseUp = (ev) => {
-    if (!hasTouchEvents.value || !hasPointerEvents.value) {
-      swipeEnd(ev)
-    }
-  }
-
-  const goToPage = (p) => {
-    if (p === null || p === page.value) return
-
-    currentPage.value = props.pages[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1
-
-    minX.value = Infinity
-    maxX.value = -Infinity
-    currentCenterOffset.value = centerOffset.value
-  }
-
   return {
     flipStart,
     flipAuto,
     flipRevert,
-    dragScroll,
-    onTouchStart,
-    onTouchMove,
-    onTouchEnd,
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-    onMouseDown,
-    onMouseMove,
-    onMouseUp,
-    goToPage
+    canFlipLeft,
+    canFlipRight,
+    page
   }
 }

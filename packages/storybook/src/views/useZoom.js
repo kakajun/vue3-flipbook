@@ -1,4 +1,4 @@
-import { ref, reactive, defineEmits, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { easeInOut } from './utils.js'
 
 export default function useZoom(props, emit, refViewport, preloadImages) {
