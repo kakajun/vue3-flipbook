@@ -1,20 +1,30 @@
 import Flipbook from '@/views/Flipbook.vue'
 
 const description = `
-The Phaser.Game instance is the main controller for the entire Phaser game.
-It is responsible for handling the boot process, parsing the configuration values, creating the renderer, and setting-up all of the global Phaser systems, such as sound and input.
-Once that is complete it will start the Scene Manager and then begin the main game loop.
+vue3-flipbook  is a Vue component that displays images in 3D page flip effect
 
-You should generally avoid accessing any of the systems created by Game, and instead use those made available to you via the Phaser.Scene Systems class instead.
+Demo page is [here](https://ts1.github.io/flipbook-vue/).
 
 \`\`\`html
-<Game :config="gameConfig">
-  <Scene name="SceneName1" />
-  <Scene name="SceneName2" />
-</Game>
-\`\`\`
+<template>
+  <flipbook class="flipbook" :pages="['array', 'of', 'image', 'URLs']"></flipbook>
+</template>
 
-See also: [Phaser.Game](https://newdocs.phaser.io/docs/Phaser.Game)
+<style>
+.flipbook {
+  width: 90vw;
+  height: 90vh;
+}
+</style>
+
+\`\`\`
+## Installation
+
+Install as a module:
+
+npm i -S vue3-flipbook
+
+
 `
 
 const getPages = async (isHi) => {
@@ -27,7 +37,6 @@ const getPages = async (isHi) => {
   }
   const images = import.meta.glob('@/assets/images/*.jpg')
   const imagesLarge = import.meta.glob('@/assets/images-large/*.jpg')
-  console.log(images, 'images')
   return isHi ? [null, ...(await importAll(images))] : [null, ...(await importAll(imagesLarge))]
 }
 
@@ -44,17 +53,276 @@ export default {
   component: Flipbook,
   tags: ['autodocs'],
   args: {
-    zoomDuration: 2500
+    zoomDuration: 2500,
+    flipDuration: 1000,
+    zooms: [1, 2, 4],
+    ambient: 0.4,
+    gloss: 0.6,
+    perspective: 2400,
+    nPolygons: 10,
+    singlePage: false,
+    forwardDirection: 'right',
+    centering: true,
+    startPage: 1,
+    swipeMin: 3,
+    clickToZoom: true,
+    dragToFlip: true,
+    wheel: 'scroll'
   },
   argTypes: {
+    pages: {
+      description: `Array of image URLs. Required.
+       All images should have the same aspect ratio.
+       If the first element is null, the next element is displayed alone (as the cover page).
+       All other props are optional.`,
+      control: 'none'
+    },
+    pagesHiRes: {
+      description: `Array of high resolution versions of image URLs.
+      They are used when zoomed.`,
+      control: 'none'
+    },
     flipDuration: {
-      name: ':flipDuration',
-      description:
-        'The configuration object for your Phaser Game instance.<br>See: [Phaser.Types.Core.GameConfig](https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig)',
+      description: `Duration of page flipping animation in milliseconds`,
+      control: 'number',
+      default: 1000
+    },
+    zoomDuration: {
+      description: `Duration of zoom in/out animation in milliseconds`,
+      control: 'number',
+      default: 500
+    },
+    zooms: {
+      description: `Array of possible magnifications`,
       control: {
         type: 'select'
       },
-      options: [1000, 3000, 5000]
+      default: '[1, 2, 4]',
+      options: [
+        [1, 2],
+        [1, 2, 4]
+      ]
+    },
+    ambient: {
+      description: `Intensity of ambient light in 0 to 1.
+      Smaller value gives more shades`,
+      control: {
+        type: 'range',
+        min: 0,
+        max: 1,
+        step: 0.1
+      },
+      defaultValue: 0.4
+    },
+    gloss: {
+      description: 'Intensity of specular light in 0 to 1. Higher value gives more gloss.',
+      control: {
+        type: 'range',
+        min: 0,
+        max: 1,
+        step: 0.1
+      },
+      defaultValue: 0.6
+    },
+    perspective: {
+      description:
+        'Z-axis distance in pixels between the screen and the viewer. Higher value gives less effect',
+      control: 'number',
+      defaultValue: 2400
+    },
+    nPolygons: {
+      description:
+        'How many rectangles a single page is horizontally split into. Higher value gives higher quality rendering in exchange for performance',
+      control: 'number',
+      defaultValue: 10
+    },
+    singlePage: {
+      description: 'Force single page mode regardless of viewport size. ',
+      control: 'boolean',
+      defaultValue: false
+    },
+    forwardDirection: {
+      description: 'Reading direction. If your document is right-to-left, set this "left".',
+      control: {
+        type: 'select'
+      },
+      options: ['left', 'right'],
+      defaultValue: 'right'
+    },
+    centering: {
+      description: 'Enable centering of the cover pages.',
+      control: 'boolean',
+      defaultValue: true
+    },
+    startPage: {
+      description: 'Page number (>= 1) to open.',
+      control: 'number',
+      defaultValue: 1
+    },
+    loadingImage: {
+      description:
+        'URL of an image that is displayed while page is loading. By default internal animated SVG is used.',
+      control: 'text'
+    },
+    clickToZoom: {
+      description: 'Zoom in or out on click or tap.',
+      control: 'boolean',
+      defaultValue: true
+    },
+    dragToFlip: {
+      description: 'Flip page by dragging/swiping. ',
+      control: 'boolean',
+      defaultValue: true
+    },
+    wheel: {
+      description:
+        "When set to 'zoom', mouse wheel events zoom in/out the page. Default is 'scroll', wheel events and touch pad scroll gestures scroll the zoomed page.",
+      control: {
+        type: 'select'
+      },
+      defaultValue: 'scroll',
+      options: ['zoom', 'scroll']
+    },
+    'flip-left-start': {
+      name: '@flip-left-start',
+      description: 'Fired when flip to left animation starts. Argument is page number before flip.',
+      control: 'none',
+      table: {
+        category: 'Emits',
+        type: { summary: 'function' }
+      }
+    },
+    'flip-left-end': {
+      name: '@flip-left-end',
+      description: 'Fired when flip to left animation ends. Argument is page number after flip.',
+      control: 'none',
+      table: {
+        category: 'Emits',
+        type: { summary: 'function' }
+      }
+    },
+    'flip-right-start': {
+      name: '@flip-right-start',
+      description:
+        'Fired when flip to right animation starts. Argument is page number before flip.',
+      control: 'none',
+      table: {
+        category: 'Emits',
+        type: { summary: 'function' }
+      }
+    },
+    'flip-right-end': {
+      name: '@flip-right-end',
+      description: 'Fired when flip to right animation ends. Argument is page number after flip.',
+      control: 'none',
+      table: {
+        category: 'Emits',
+        type: { summary: 'function' }
+      }
+    },
+    'zoom-start': {
+      name: '@zoom-start',
+      description: 'Fired when zoom-in/out animation starts. Argument is magnification after zoom.',
+      control: 'none',
+      table: {
+        category: 'Emits',
+        type: { summary: 'function' }
+      }
+    },
+    'zoom-end': {
+      name: '@zoom-end',
+      description: 'Fired when zoom-in/out animation ends. Argument is magnification after zoom.',
+      control: 'none',
+      table: {
+        category: 'Emits',
+        type: { summary: 'function' }
+      }
+    },
+    default: {
+      description: 'This component exposes some properties and methods as slot properties.',
+      control: 'none'
+    },
+    canFlipLeft: {
+      description:
+        'True if it can flip to previous page. NOTE: Can return false if currently being animated.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'boolean' }
+      }
+    },
+    canFlipRight: {
+      description:
+        'True if it can flip to next page. NOTE: Can return false if currently being animated.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'boolean' }
+      }
+    },
+    canZoomIn: {
+      description: 'True if it can zoom in.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'boolean' }
+      }
+    },
+    canZoomOut: {
+      description: 'True if it can zoom out.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'boolean' }
+      }
+    },
+    page: {
+      description: 'Current page number (1 to numPages).',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'number' }
+      }
+    },
+    numPages: {
+      description: 'Total number of pages.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'number' }
+      }
+    },
+    flipLeft: {
+      description: 'Method to flip to previous page.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'function' }
+      }
+    },
+    flipRight: {
+      description: 'Method to flip to next page.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'function' }
+      }
+    },
+    zoomIn: {
+      description: 'Method to zoom in.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'function' }
+      }
+    },
+    zoomOut: {
+      description: 'Method to zoom out.',
+      control: 'none',
+      table: {
+        category: 'Slots',
+        type: { summary: 'function' }
+      }
     }
   }
 }
@@ -71,6 +339,19 @@ export const SlowOne = {
        :flipDuration="args.flipDuration"
        :pagesHiRes="pagesHiRes"
        :zoomDuration="args.zoomDuration"
+       :zooms="args.zooms"
+       :ambient="args.ambient"
+        :gloss="args.gloss"
+        :perspective="args.perspective"
+        :nPolygons="args.nPolygons"
+        :singlePage="args.singlePage"
+        :forwardDirection="args.forwardDirection"
+        :centering="args.centering"
+        :startPage="args.startPage"
+        :loadingImage="args.loadingImage"
+        :clickToZoom="args.clickToZoom"
+        :dragToFlip="args.dragToFlip"
+        :wheel="args.wheel"
        />`
   }),
   loaders: [
@@ -83,33 +364,3 @@ export const SlowOne = {
     flipDuration: 3000
   }
 }
-
-// export const MiddleOne = {
-//   pages: async () => {
-//     const a = await getPages()
-//     console.log(a, 'a')
-//     return {
-//       type: 'object',
-//       defaultValue: a
-//     }
-//   },
-//   pagesHiRes: async () => await getPages(true),
-//   args: {
-//     flipDuration: 2000
-//   }
-// }
-
-// export const FastOne = {
-//   pages: async () => {
-//     const a = await getPages()
-//     console.log(a, 'a')
-//     return {
-//       type: 'object',
-//       defaultValue: a
-//     }
-//   },
-//   pagesHiRes: async () => await getPages(true),
-//   args: {
-//     flipDuration: 1000
-//   }
-// }
