@@ -139,6 +139,9 @@ importers:
       vue-material-design-icons:
         specifier: ^5.1.2
         version: 5.2.0
+      vue3-flipbook:
+        specifier: link:../vue3-flipbook
+        version: link:../vue3-flipbook
 
 packages:
 

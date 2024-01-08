@@ -29,8 +29,11 @@
   "scripts": {
     "build": "vite build"
   },
-  "main": "./dist/flipbook.mjs.js",
-  "module": "./dist/flipbook.mjs.js",
+  "main": "./dist/vue3-flipbook.js",
+  "module": "./dist/vue3-flipbook.mjs",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "vue": "^3.3.11",
     "vue-material-design-icons": "^5.1.2"

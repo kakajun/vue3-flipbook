@@ -53,7 +53,7 @@ import LeftIcon from 'vue-material-design-icons/ChevronLeftCircle.vue'
 import RightIcon from 'vue-material-design-icons/ChevronRightCircle.vue'
 import PlusIcon from 'vue-material-design-icons/PlusCircle.vue'
 import MinusIcon from 'vue-material-design-icons/MinusCircle.vue'
-import Flipbook from './Flipbook.vue'
+import Flipbook from 'vue3-flipbook'
 import Ribbon from './Ribbon.vue'
 
 const flipbookref = ref(null)
@@ -112,7 +112,6 @@ const getPages = async () => {
   pages.value = [null, ...(await importAll(images))]
   pagesHiRes.value = [null, ...(await importAll(imagesLarge))]
 }
-
 </script>
 
 <style>

@@ -5,25 +5,24 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-  ],
+  plugins: [vue()],
   build: {
     lib: {
       entry: 'src/index.js',
-      name: 'Vue3Flipbook'
+      name: 'Vue3Flipbook',
+      formats: ['es', 'mjs', 'umd']
     },
     rollupOptions: {
-      external: [ "vue"],
+      external: ['vue'],
       output: {
         globals: {
-          vue: "Vue",
+          vue: 'Vue'
         },
-        exports: "named",
-        generatedCode: "es5",
+        exports: 'named'
+        // generatedCode: 'es5'
       }
     },
-    sourcemap: true,
+    sourcemap: true
   },
   resolve: {
     alias: {
