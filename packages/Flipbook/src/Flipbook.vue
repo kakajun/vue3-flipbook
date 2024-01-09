@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vue3-flipbook">
     <slot
       v-bind="{
         canFlipLeft,
@@ -972,70 +972,73 @@ watch(props.startPage, (p) => {
 })
 </script>
 
-<style scoped>
-.viewport {
-  -webkit-overflow-scrolling: touch;
-  width: 100%;
-  height: 100%;
-}
+<style lang="scss">
+.vue3-flipbook {
+  .viewport {
+    left: 0;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    height: 100%;
+  }
 
-.viewport.zoom {
-  overflow: scroll;
-}
+  .viewport.zoom {
+    overflow: scroll;
+  }
 
-.viewport.zoom.drag-to-scroll {
-  overflow: hidden;
-}
+  .viewport.zoom.drag-to-scroll {
+    overflow: hidden;
+  }
 
-.flipbook-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-origin: top left;
-  user-select: none;
-}
+  .flipbook-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-origin: top left;
+    user-select: none;
+  }
 
-.click-to-flip {
-  position: absolute;
-  width: 50%;
-  height: 100%;
-  top: 0;
-  user-select: none;
-}
+  .click-to-flip {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    top: 0;
+    user-select: none;
+  }
 
-.click-to-flip.left {
-  left: 0;
-}
+  .click-to-flip.left {
+    left: 0;
+  }
 
-.click-to-flip.right {
-  right: 0;
-}
+  .click-to-flip.right {
+    right: 0;
+  }
 
-.bounding-box {
-  position: absolute;
-  user-select: none;
-}
+  .bounding-box {
+    position: absolute;
+    user-select: none;
+  }
 
-.page {
-  position: absolute;
-  backface-visibility: hidden;
-}
+  .page {
+    position: absolute;
+    backface-visibility: hidden;
+  }
 
-.polygon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-repeat: no-repeat;
-  backface-visibility: hidden;
-  transform-origin: center left;
-}
+  .polygon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-repeat: no-repeat;
+    backface-visibility: hidden;
+    transform-origin: center left;
+  }
 
-.polygon.blank {
-  background-color: #ddd;
-}
+  .polygon.blank {
+    background-color: #ddd;
+  }
 
-.polygon .lighting {
-  width: 100%;
-  height: 100%;
+  .polygon .lighting {
+    width: 100%;
+    height: 100%;
+  }
 }
 </style>

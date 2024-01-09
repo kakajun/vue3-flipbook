@@ -54,6 +54,8 @@ import RightIcon from 'vue-material-design-icons/ChevronRightCircle.vue'
 import PlusIcon from 'vue-material-design-icons/PlusCircle.vue'
 import MinusIcon from 'vue-material-design-icons/MinusCircle.vue'
 import Flipbook from 'vue3-flipbook'
+import 'vue3-flipbook/dist/style.css'
+
 import Ribbon from './Ribbon.vue'
 
 const flipbookref = ref(null)

@@ -1,5 +1,5 @@
-import Flipbook from '@/views/Flipbook.vue'
-
+import Flipbook from 'vue3-flipbook'
+import 'vue3-flipbook/dist/style.css'
 const description = `
 vue3-flipbook  is a Vue component that displays images in 3D page flip effect
 

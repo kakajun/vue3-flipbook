@@ -60,9 +60,12 @@ importers:
       rematrix:
         specifier: ^0.7.2
         version: 0.7.2
+      sass:
+        specifier: ^1.69.7
+        version: 1.69.7
       vite:
         specifier: ^5.0.10
-        version: 5.0.11(less@4.2.0)
+        version: 5.0.11(sass@1.69.7)
 
   packages/storybook:
     dependencies:
@@ -140,8 +143,8 @@ importers:
         specifier: ^5.1.2
         version: 5.2.0
       vue3-flipbook:
-        specifier: link:../vue3-flipbook
-        version: link:../vue3-flipbook
+        specifier: file:../Flipbook
+        version: file:packages/Flipbook(typescript@5.3.3)
 
 packages:
 
@@ -6649,6 +6652,10 @@ packages:
     dev: true
     optional: true
 
+  /immutable@4.3.4:
+    resolution: {integrity: sha512-fsXeu4J4i6WNWSikpI88v/PcVflZz+6kMhUfIwc5SY+poQRPnaf5V7qds6SUyUN3cVxEzuCab7QIoLOQ+DQ1wA==}
+    dev: true
+
   /import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -9100,6 +9107,16 @@ packages:
       webpack: 5.89.0(esbuild@0.18.20)
     dev: true
 
+  /sass@1.69.7:
+    resolution: {integrity: sha512-rzj2soDeZ8wtE2egyLXgOOHQvaC2iosZrkF6v3EUG+tBwEvhqUCzm0VP3k9gHF9LXbSrRhT5SksoI56Iw8NPnQ==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
+    dependencies:
+      chokidar: 3.5.3
+      immutable: 4.3.4
+      source-map-js: 1.0.2
+    dev: true
+
   /sax@1.3.0:
     resolution: {integrity: sha512-0s+oAmw9zLl1V1cS9BtZN7JAd0cW5e0QH4W3LWEK6a4LaLEA2OTpGYWDY+6XasBLtz6wkm3u1xRw95mRuJ59WA==}
     requiresBuild: true
@@ -10200,6 +10217,42 @@ packages:
       fsevents: 2.3.3
     dev: true
 
+  /vite@5.0.11(sass@1.69.7):
+    resolution: {integrity: sha512-XBMnDjZcNAw/G1gEiskiM1v6yzM4GE5aMGvhWTlHAYYhxb7S3/V1s3m2LDHa8Vh6yIWYYB0iJwsEaS523c4oYA==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || >=20.0.0
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      esbuild: 0.19.11
+      postcss: 8.4.33
+      rollup: 4.9.4
+      sass: 1.69.7
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
   /vitest@1.1.3(jsdom@23.1.0)(less@4.2.0):
     resolution: {integrity: sha512-2l8om1NOkiA90/Y207PsEvJLYygddsOyr81wLQ20Ra8IlLKbyQncWsGZjnbkyG2KwwuTXLQjEPOJuxGMG8qJBQ==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -10677,4 +10730,15 @@ packages:
   /yocto-queue@1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
+    dev: true
+
+  file:packages/Flipbook(typescript@5.3.3):
+    resolution: {directory: packages/Flipbook, type: directory}
+    id: file:packages/Flipbook
+    name: vue3-flipbook
+    dependencies:
+      vue: 3.4.5(typescript@5.3.3)
+      vue-material-design-icons: 5.2.0
+    transitivePeerDependencies:
+      - typescript
     dev: true

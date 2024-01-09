@@ -10,7 +10,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.js',
       name: 'Vue3Flipbook',
-      formats: ['es', 'mjs', 'umd']
+      formats: ['es', 'cjs', 'umd']
     },
     rollupOptions: {
       external: ['vue'],

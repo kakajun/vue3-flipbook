@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { mount } from '@vue/test-utils'
-import Flipbook from '@/views/Flipbook.vue'
-
+import Flipbook from 'vue3-flipbook'
+import 'vue3-flipbook/dist/style.css'
 test('returns high resolution page URL when hiRes is true and zoom is greater than 1', () => {
   const wrapper = mount(Flipbook, {
     props: {
