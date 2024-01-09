@@ -361,6 +361,6 @@ export const SlowOne = {
     })
   ],
   args: {
-    flipDuration: 3000
+    // flipDuration: 3000
   }
 }

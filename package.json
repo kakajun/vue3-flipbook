@@ -35,7 +35,7 @@
     }
   },
   "scripts": {
-    "dev": "npm run storybook --prefix ./packages/storybook",
+    "dev": "npm run dev --prefix ./packages/storybook",
     "storybook": "npm run storybook --prefix ./packages/storybook",
     "lint": "eslint --fix \"packages/*/src/**/*.{js,vue}\"",
     "format": "prettier --write --loglevel warn \"packages/*/src/**/*.{js,ts,json,css,less,scss,vue,html,md}\"",
