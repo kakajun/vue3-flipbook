@@ -19,8 +19,8 @@ jobs:
         with:
           bun-version: latest
       - run: bun i
-      - run: bun run build
-      - run: node publish.js
+      - run: bun run build:storybook
+      - run: bun run deploy:storybook
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
