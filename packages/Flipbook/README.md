@@ -1,35 +1,108 @@
-# vue-turnjs
+# vue3-flipbook
 
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![npm version](https://badge.fury.io/js/vue3-flipbook.svg)](https://badge.fury.io/js/vue3-flipbook) ![demo](https://github.com/ts1/vue3-flipbook/workflows/demo/badge.svg)
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+`vue3-flipbook` is a Vue component that displays images in 3D page flip effect.
 
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
+Demo page is [here](https://github.com/kakajun/vue3-flipbook).
 
-![npm](https://img.shields.io/npm/dw/vue-turnjs)
-![npm](https://img.shields.io/npm/v/vue-turnjs)
+## Installation
 
-📖 [Docs](https://reidond.gitbook.io/vue-turnjs/)
+Install as a module:
 
-📚 [Storybook](https://vue-turnjs-storybook.netlify.app/)
+```
+npm i -S vue3-flipbook
+```
 
-## Contributors ✨
+or
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+```
+yarn add vue3-flipbook
+```
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/Reidond"><img src="https://avatars0.githubusercontent.com/u/20406775?v=4" width="100px;" alt=""/><br /><sub><b>Andrii Shafar</b></sub></a><br /><a href="https://github.com/Reidond/vue-turnjs/commits?author=Reidond" title="Code">💻</a> <a href="https://github.com/Reidond/vue-turnjs/commits?author=Reidond" title="Documentation">📖</a> <a href="#maintenance-Reidond" title="Maintenance">🚧</a></td>
-    <td align="center"><a href="https://github.com/Orest-2"><img src="https://avatars3.githubusercontent.com/u/20842843?v=4" width="100px;" alt=""/><br /><sub><b>Pidfihurnyi Orest</b></sub></a><br /><a href="https://github.com/Reidond/vue-turnjs/commits?author=Orest-2" title="Code">💻</a> <a href="https://github.com/Reidond/vue-turnjs/pulls?q=is%3Apr+reviewed-by%3AOrest-2" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/Reidond/vue-turnjs/commits?author=Orest-2" title="Tests">⚠️</a></td>
-  </tr>
-</table>
+or
 
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
+```
+pnpm add vue3-flipbook
+```
 
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+Or include in html:
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+````html
+## Usage ```html
+<template>
+  <flipbook class="flipbook" :pages="['array', 'of', 'image', 'URLs']"></flipbook>
+</template>
+
+<style>
+  .flipbook {
+    width: 90vw;
+    height: 90vh;
+  }
+</style>
+````
+
+If installed as a module, with Vue 3.x,
+
+```html
+<script>
+  import Flipbook from 'vue3-flipbook'
+  export default {
+    components: { Flipbook }
+  }
+</script>
+```
+
+To use with Vue 2.x,
+
+```js
+import Flipbook from 'vue3-flipbook/vue2'
+```
+
+## CSS API
+
+You may need to specify the size of view port in your style sheet, directly to `<flipbook>` element, or to `.viewport` sub-element of flipbook.
+
+If the size is horizontally long and `singlePage` prop is `false` (default), it displays two pages spread, suitable for desktop browsers. If it's vertically long, it displays single pages, suitable for smartphones.
+
+There are some internal classes.
+
+### `.viewport`
+
+A `<div>` element that contains everything but `<slot>`. `<slot>` is placed above `.viewport`.
+
+### `.bounding-box`
+
+Approximate bounding box of the displayed images. Suitable to give `box-shadow`.
+
+## Browser support
+
+Supports modern browsers and IE 11.
+
+## Development
+
+To start development server with demo pages:
+
+```
+cd examples/demo
+pnpm i
+pnpm serve
+```
+
+To package for npm:
+
+```
+pnpm dist
+```
+
+## Credits
+
+- vivekKodira: README correction
+- siderisng: `dragToFlip`
+- MaikoTan: TypeScript support
+
+## License
+
+MIT
+
+quote https://ts1.github.io/flipbook-vue/ Takeshi Sone.
