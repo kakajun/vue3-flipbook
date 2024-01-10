@@ -16,10 +16,12 @@ jobs:
         with:
           bun-version: latest
       - name: Install and Build 🔧
-        run: bun i
-        run: bun run build
-      - name: Deploy 💡
+        run: |
+          bun i
+          bun run build
+      - name: Build Storybook 💪
         run: bun run build-storybook
+      - name: Deploy Storybook 🔥
         run: bun run deploy-storybook
       - name: publish 🚀
         run: node publish.js
