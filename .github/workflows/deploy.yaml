@@ -3,10 +3,7 @@ name: Deploy
 #   use_directory_urls: false
 #   siteUrl: https://github.com/kakajun/vue3-flipbook
 #   site_url: https://github.com/kakajun/vue3-flipbook
-on:
-  push:
-    branches:
-      - master
+on: [push, pull_request]
 jobs:
   lint:
     runs-on: ubuntu-latest
