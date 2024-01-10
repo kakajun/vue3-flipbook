@@ -1,4 +1,4 @@
-import{_ as e}from"./iframe-bcwMhh7t.js";import{n as m}from"./style-_zXJRyeU.js";import"../sb-preview/runtime.js";import"./vue.esm-bundler-3G0u27Tu.js";const u=`
+import{_ as e}from"./iframe-mDvKAAq2.js";import{n as m}from"./style-STFpgW4A.js";import"../sb-preview/runtime.js";import"./vue.esm-bundler-sRNSo93S.js";const u=`
 vue3-flipbook  is a Vue component that displays images in 3D page flip effect
 
 Demo page is [here](https://github.com/kakajun/vue3-flipbook).
