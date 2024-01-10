@@ -26,11 +26,6 @@ or
 pnpm add vue3-flipbook
 ```
 
-Or include in html:
-
-```html
-
-
 
 ## Usage
 
@@ -56,12 +51,6 @@ If installed as a module, with Vue 3.x,
     components: { Flipbook }
   }
 </script>
-```
-
-To use with Vue 2.x,
-
-```js
-import Flipbook from 'vue3-flipbook/vue2'
 ```
 
 ## CSS API
