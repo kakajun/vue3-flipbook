@@ -21,7 +21,7 @@ jobs:
       - name: Deploy Storybook
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.PERSONAL_SECRET_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./packages/storybook/storybook-static
       # - name: Set Git user
       #   run: |
