@@ -1,4 +1,4 @@
-import{_ as e}from"./iframe-mDvKAAq2.js";import{n as m}from"./style-STFpgW4A.js";import"../sb-preview/runtime.js";import"./vue.esm-bundler-sRNSo93S.js";const u=`
+import{_ as e}from"./iframe-ar9HhqP1.js";import{u as m}from"./style-MDDysYSs.js";import"../sb-preview/runtime.js";import"./vue.esm-bundler-pap1KXlj.js";const d=`
 vue3-flipbook  is a Vue component that displays images in 3D page flip effect
 
 Demo page is [here](https://github.com/kakajun/vue3-flipbook).
@@ -23,7 +23,7 @@ Install as a module:
 npm i -S vue3-flipbook
 
 
-`,s=async a=>{const o=async n=>{const r=[];for(const c in n)r.push((await n[c]()).default);return r};return a?[null,...await o(Object.assign({"/src/assets/images/1.jpg":()=>e(()=>import("./1-G8vowAl9.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/2.jpg":()=>e(()=>import("./2-0c-F58vL.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/3.jpg":()=>e(()=>import("./3-nePBJM5q.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/4.jpg":()=>e(()=>import("./4-_UdVcEdD.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/5.jpg":()=>e(()=>import("./5-8E8c7eB3.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/6.jpg":()=>e(()=>import("./6-4NPMXd18.js"),__vite__mapDeps([]),import.meta.url)}))]:[null,...await o(Object.assign({"/src/assets/images-large/1.jpg":()=>e(()=>import("./1-_cTvr_8q.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/2.jpg":()=>e(()=>import("./2-xOxI6dzB.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/3.jpg":()=>e(()=>import("./3-B4s7Ev3m.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/4.jpg":()=>e(()=>import("./4-XOmCUSEy.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/5.jpg":()=>e(()=>import("./5-lG-qnNPa.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/6.jpg":()=>e(()=>import("./6-LvKYjtjH.js"),__vite__mapDeps([]),import.meta.url)}))]},_={title:"flipDuration",parameters:{docs:{description:{component:u}}},component:m,tags:["autodocs"],args:{zoomDuration:2500,flipDuration:1e3,zooms:[1,2,4],ambient:.4,gloss:.6,perspective:2400,nPolygons:10,singlePage:!1,forwardDirection:"right",centering:!0,startPage:1,swipeMin:3,clickToZoom:!0,dragToFlip:!0,wheel:"scroll"},argTypes:{pages:{description:`Array of image URLs. Required.
+`,s=async a=>{const o=async n=>{const r=[];for(const c in n){const u=await n[c]();r.push(u.default)}return r};return a?[null,...await o(Object.assign({"/src/assets/images/1.jpg":()=>e(()=>import("./1-G8vowAl9.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/2.jpg":()=>e(()=>import("./2-0c-F58vL.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/3.jpg":()=>e(()=>import("./3-nePBJM5q.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/4.jpg":()=>e(()=>import("./4-_UdVcEdD.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/5.jpg":()=>e(()=>import("./5-8E8c7eB3.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images/6.jpg":()=>e(()=>import("./6-4NPMXd18.js"),__vite__mapDeps([]),import.meta.url)}))]:[null,...await o(Object.assign({"/src/assets/images-large/1.jpg":()=>e(()=>import("./1-_cTvr_8q.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/2.jpg":()=>e(()=>import("./2-xOxI6dzB.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/3.jpg":()=>e(()=>import("./3-B4s7Ev3m.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/4.jpg":()=>e(()=>import("./4-XOmCUSEy.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/5.jpg":()=>e(()=>import("./5-lG-qnNPa.js"),__vite__mapDeps([]),import.meta.url),"/src/assets/images-large/6.jpg":()=>e(()=>import("./6-LvKYjtjH.js"),__vite__mapDeps([]),import.meta.url)}))]},v={title:"flipDuration",parameters:{docs:{description:{component:d}}},component:m,tags:["autodocs"],args:{zoomDuration:2500,flipDuration:1e3,zooms:[1,2,4],ambient:.4,gloss:.6,perspective:2400,nPolygons:10,singlePage:!1,forwardDirection:"right",centering:!0,startPage:1,swipeMin:3,clickToZoom:!0,dragToFlip:!0,wheel:"scroll"},argTypes:{pages:{description:`Array of image URLs. Required.
        All images should have the same aspect ratio.
        If the first element is null, the next element is displayed alone (as the cover page).
        All other props are optional.`,control:"none"},pagesHiRes:{description:`Array of high resolution versions of image URLs.
@@ -46,13 +46,13 @@ npm i -S vue3-flipbook
         :clickToZoom="args.clickToZoom"
         :dragToFlip="args.dragToFlip"
         :wheel="args.wheel"
-       />`}),loaders:[async()=>({pages:await s(),pagesHiRes:await s(!0)})],args:{}};var l,p,g;t.parameters={...t.parameters,docs:{...(l=t.parameters)==null?void 0:l.docs,source:{originalSource:`{
-  render: (args, {
+       />`}),loaders:[async()=>({pages:await s(!1),pagesHiRes:await s(!0)})],args:{}};var l,p,g;t.parameters={...t.parameters,docs:{...(l=t.parameters)==null?void 0:l.docs,source:{originalSource:`{
+  render: (args: any, {
     loaded: {
       pages,
       pagesHiRes
     }
-  }) => ({
+  }: any) => ({
     components: {
       Flipbook
     },
@@ -84,13 +84,13 @@ npm i -S vue3-flipbook
        />\`
   }),
   loaders: [async () => ({
-    pages: await getPages(),
+    pages: await getPages(false),
     pagesHiRes: await getPages(true)
   })],
   args: {
     // flipDuration: 3000
   }
-}`,...(g=(p=t.parameters)==null?void 0:p.docs)==null?void 0:g.source}}};const v=["SlowOne"];export{t as SlowOne,v as __namedExportsOrder,_ as default};
+}`,...(g=(p=t.parameters)==null?void 0:p.docs)==null?void 0:g.source}}};const w=["SlowOne"];export{t as SlowOne,w as __namedExportsOrder,v as default};
 function __vite__mapDeps(indexes) {
   if (!__vite__mapDeps.viteFileDeps) {
     __vite__mapDeps.viteFileDeps = []
