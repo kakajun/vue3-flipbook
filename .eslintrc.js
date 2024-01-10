@@ -5,12 +5,18 @@ module.exports = {
     es2021: true,
     node: true
   },
-  extends: ['plugin:vue/vue3-recommended', 'eslint:recommended', 'plugin:storybook/recommended'],
+  extends: [
+    'plugin:vue/vue3-recommended',
+    'eslint:recommended',
+    'plugin:storybook/recommended',
+    'plugin:@typescript-eslint/recommended'
+  ],
   parserOptions: {
-    ecmaVersion: 2021
+    ecmaVersion: 2021,
+    parser: '@typescript-eslint/parser'
   },
   parser: 'vue-eslint-parser',
-  plugins: ['eslint-plugin-storybook'],
+  plugins: ['eslint-plugin-storybook', '@typescript-eslint'],
   overrides: [
     {
       files: ['*.vue'],

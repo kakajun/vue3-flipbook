@@ -20,7 +20,7 @@
   "scripts": {
     "dev": "npm run dev --prefix ./packages/storybook",
     "storybook": "npm run storybook --prefix ./packages/storybook",
-    "lint": "eslint --fix \"packages/*/src/**/*.{js,vue}\"",
+    "lint": "eslint --fix \"packages/*/src/**/*.{js,ts,vue}\"",
     "format": "prettier --write --loglevel warn \"packages/*/src/**/*.{js,ts,json,css,less,scss,vue,html,md}\"",
     "style": "stylelint --fix 'packages/*/src/**/*.{css,scss,vue}'",
     "build": "npm run build --prefix ./packages/Flipbook",
@@ -29,20 +29,22 @@
     "test": "npm run test --prefix ./packages/Flipbook"
   },
   "devDependencies": {
-    "postcss-html": "^1.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
     "eslint": "8.56.0",
     "eslint-plugin-storybook": "^0.6.15",
     "eslint-plugin-vue": "^9.19.2",
+    "gh-pages": "^6.1.0",
+    "husky": "4.3.8",
+    "lint-staged": "^15.2.0",
+    "postcss-html": "^1.5.0",
+    "prettier": "^3.1.1",
     "stylelint": "15.11.0",
     "stylelint-config-recommended": "^14.0.0",
     "stylelint-config-recommended-vue": "^1.5.0",
     "stylelint-config-standard": "^35.0.0",
-    "vue-eslint-parser": "^9.3.2",
-    "gh-pages": "^6.1.0",
-    "husky": "4.3.8",
     "typescript": "^5.3.3",
-    "prettier": "^3.1.1",
-    "lint-staged": "^15.2.0"
+    "vue-eslint-parser": "^9.3.2"
   },
   "lint-staged": {
     "*.{js,vue}": [
