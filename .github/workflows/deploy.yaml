@@ -21,14 +21,21 @@ jobs:
           bun run build
       - name: Build Storybook 💪
         run: bun run build-storybook
-      - name: Set Git user
-        run: |
-          git config --global user.email "253495832.com"
-          git config --global user.name "kakajun"
-      - name: Deploy Storybook 🔥
-        run: bun run deploy-storybook
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: packages/storybook/storybook-static # The folder the action should deploy.
+          workspace: 'main'
+          target-folder: 'gh-pages' # 放在1X目录下
+      # - name: Set Git user
+      #   run: |
+      #     git config --global user.email "253495832.com"
+      #     git config --global user.name "kakajun"
+      # - name: Deploy Storybook 🔥
+      #   run: bun run deploy-storybook
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
       - name: publish 🚀
         run: node publish.js
         env:
