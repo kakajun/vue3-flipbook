@@ -21,6 +21,10 @@ jobs:
           bun run build
       - name: Build Storybook 💪
         run: bun run build-storybook
+      - name: Set Git user
+        run: |
+          git config --global user.email "253495832.com"
+          git config --global user.name "kakajun"
       - name: Deploy Storybook 🔥
         run: bun run deploy-storybook
         env:
