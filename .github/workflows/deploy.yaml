@@ -23,8 +23,9 @@ jobs:
         run: bun run build-storybook
       - name: Deploy Storybook 🔥
         run: bun run deploy-storybook
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
       - name: publish 🚀
         run: node publish.js
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
