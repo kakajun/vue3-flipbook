@@ -11,14 +11,19 @@ jobs:
       matrix:
         node-version: [20.x]
     steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - run: bun i
-      - run: bun run build-storybook
-      - run: bun run deploy-storybook
-      - run: node publish.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        uses: oven-sh/setup-bun@v1
+          with:
+            bun-version: latest
+      - name: Install and Build 🔧
+        run: bun i
+        run: bun run build
+      - name: Deploy 💡
+        run: bun run build-storybook
+        run: bun run deploy-storybook
+      - name: publish 🚀
+        run: node publish.js
+          env:
+            GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}
+            NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
