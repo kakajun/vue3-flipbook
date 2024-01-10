@@ -108,7 +108,7 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import Matrix from './matrix'
 import spinner from './spinner.svg'
 import { calculatePageRotation, easeInOut } from './utils.js'
@@ -131,9 +131,7 @@ const props = defineProps({
   },
   pagesHiRes: {
     type: Array,
-    default: function () {
-      return []
-    }
+    default: () => []
   },
   flipDuration: {
     type: Number,
@@ -145,9 +143,7 @@ const props = defineProps({
   },
   zooms: {
     type: Array,
-    default: function () {
-      return [1, 2, 4]
-    }
+    default: () => [1, 2, 4]
   },
   perspective: {
     type: Number,
@@ -174,9 +170,7 @@ const props = defineProps({
     default: false
   },
   forwardDirection: {
-    validator: function (val) {
-      return val === 'right' || val === 'left'
-    },
+    validator: (val: string) => val === 'right' || val === 'left',
     default: 'right'
   },
   centering: {
@@ -205,24 +199,24 @@ const props = defineProps({
   }
 })
 
-const viewWidth = ref(0)
-const viewHeight = ref(0)
+const viewWidth = ref<number>(0)
+const viewHeight = ref<number>(0)
 
-const displayedPages = ref(1)
+const displayedPages = ref<number>(1)
 
-const currentPage = ref(0)
-const firstPage = ref(0)
-const secondPage = ref(1)
+const currentPage = ref<number>(0)
+const firstPage = ref<number>(0)
+const secondPage = ref<number>(1)
 
-const touchStartX = ref(null)
-const touchStartY = ref(null)
-const maxMove = ref(0)
-const activeCursor = ref(null)
-const hasTouchEvents = ref(false)
-const hasPointerEvents = ref(false)
-const minX = ref(Infinity)
-const maxX = ref(-Infinity)
-const refViewport = ref(null)
+const touchStartX = ref<number | null>(null)
+const touchStartY = ref<number | null>(null)
+const maxMove = ref<number>(0)
+const activeCursor = ref<string | null>(null)
+const hasTouchEvents = ref<boolean>(false)
+const hasPointerEvents = ref<boolean>(false)
+const minX = ref<number>(Infinity)
+const maxX = ref<number>(-Infinity)
+const refViewport = ref<HTMLElement | null>(null)
 const flip = reactive({
   progress: 0,
   direction: null,
@@ -232,19 +226,19 @@ const flip = reactive({
   opacity: 1
 })
 
-const currentCenterOffset = ref(null)
-const animatingCenter = ref(false)
-const startScrollLeft = ref(0)
-const startScrollTop = ref(0)
+const currentCenterOffset = ref<number | null>(null)
+const animatingCenter = ref<boolean>(false)
+const startScrollLeft = ref<number>(0)
+const startScrollTop = ref<number>(0)
 
-const preloadImages = (hiRes = false) => {
+const preloadImages = (hiRes: boolean = false) => {
   for (let i = currentPage.value - 3; i <= currentPage.value + 3; i++) {
     pageUrlLoading(i) // this preloads image
   }
   if (hiRes) {
     for (let i = currentPage.value; i < currentPage.value + displayedPages.value; i++) {
       const src = props.pagesHiRes[i]
-      if (src) {
+      if (src && typeof src === 'string') {
         new Image().src = src
       }
     }

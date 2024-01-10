@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue'
-import useImageLoad from './useImageLoad'
+import useImageLoad from './useImageLoad.js'
 import { easeInOut } from './utils.js'
 export default function usePageNavigation(
   props,
