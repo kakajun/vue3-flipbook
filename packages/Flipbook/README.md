@@ -1,10 +1,12 @@
 # vue3-flipbook
 
-[![npm version](https://badge.fury.io/js/vue3-flipbook.svg)](https://badge.fury.io/js/vue3-flipbook) ![demo](https://github.com/ts1/vue3-flipbook/workflows/demo/badge.svg)
+[![npm version](https://badge.fury.io/js/vue3-flipbook.svg)](https://badge.fury.io/js/vue3-flipbook.svg) ![deploy](https://github.com/kakajun/vue3-flipbook/actions/workflows/deploy.yaml/badge.svg)
 
 `vue3-flipbook` is a Vue component that displays images in 3D page flip effect.
 
-Demo page is [here](https://github.com/kakajun/vue3-flipbook).
+<p align="middle">
+    <a href="https://kakajun.github.io/vue3-flipbook/" target="_blank"><strong>Storybook</strong></a>
+</p>
 
 ## Installation
 
@@ -51,12 +53,6 @@ If installed as a module, with Vue 3.x,
     components: { Flipbook }
   }
 </script>
-```
-
-To use with Vue 2.x,
-
-```js
-import Flipbook from 'vue3-flipbook/vue2'
 ```
 
 ## CSS API
