@@ -39,6 +39,7 @@
     "storybook": "^7.6.6",
     "vite": "^5.0.10",
     "vitest": "^1.1.3",
+    "typescript": "^5.3.3",
     "vue-material-design-icons": "^5.1.2",
     "vue3-flipbook": "file:../Flipbook"
   }

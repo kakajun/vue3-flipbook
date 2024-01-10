@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     lib: {
-      entry: 'src/index.js',
+      entry: 'src/index.ts',
       name: 'Vue3Flipbook',
       formats: ['es', 'cjs', 'umd']
     },

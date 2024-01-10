@@ -1,11 +1,11 @@
 import Demo from '@/views/demo.vue'
-
+import type { StoryObj } from '@storybook/vue3'
 export default {
   title: 'FlipDemo',
   component: Demo,
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
   tags: ['autodocs'],
-  render: (args) => ({
+  render: (args: any) => ({
     // Components used in your story `template` are defined in the `components` object
     components: {
       Demo
@@ -22,6 +22,6 @@ export default {
   })
 }
 
-export const FlipDemo = {
+export const FlipDemo: StoryObj = {
   args: {}
 }

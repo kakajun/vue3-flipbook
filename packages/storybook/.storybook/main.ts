@@ -1,8 +1,8 @@
-/** @type { import('@storybook/vue3-vite').StorybookConfig } */
-import { mergeConfig } from 'vite';
+import type { StorybookConfig } from '@storybook/vue3-vite'
+
 
 import { fileURLToPath, URL } from 'node:url'
-const config = {
+const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
     '@storybook/addon-links',
@@ -19,17 +19,6 @@ const config = {
   },
   docs: {
     autodocs: 'tag'
-  },
-  async viteFinal(config, { configType }) {
-    if (configType === 'DEVELOPMENT') {
-      // Your development configuration goes here
-    }
-    if (configType === 'PRODUCTION') {
-      // Your production configuration goes here.
-    }
-    return mergeConfig(config, {
-      // Your environment configuration here
-    })
   }
 }
 export default config

@@ -1,17 +1,17 @@
 import { ref, reactive, defineEmits, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
-
-export default function useImageLoad(props, preloadImages) {
+import { flipbookProps } from './index-types.ts'
+export default function useImageLoad(props: flipbookProps, preloadImages: any) {
   const { zoom, zooming } = useZoom(props)
 
-  const loadedImages = ref({})
-  const nImageLoad = ref(0)
-  const nImageLoadTrigger = ref(0)
-  const imageLoadCallback = ref(null)
-  const imageWidth = ref(null)
-  const imageHeight = ref(null)
+  const loadedImages = ref<object>({})
+  const nImageLoad = ref<number>(0)
+  const nImageLoadTrigger = ref<number>(0)
+  const imageLoadCallback = ref<Function | null>(null)
+  const imageWidth = ref<number>()
+  const imageHeight = ref<number>()
 
-  const pageUrl = (page, hiRes = false) => {
+  const pageUrl = (page: number, hiRes = false): string | null => {
     if (hiRes && zoom.value > 1 && !zooming.value) {
       const url = props.pagesHiRes[page]
       return url ? url : null
@@ -19,7 +19,7 @@ export default function useImageLoad(props, preloadImages) {
     return props.pages[page] || null
   }
 
-  const loadImage = (url) => {
+  const loadImage = (url: string): string => {
     if (imageWidth.value === null) {
       return url
     } else {
@@ -36,7 +36,7 @@ export default function useImageLoad(props, preloadImages) {
     }
   }
 
-  const pageUrlLoading = (page, hiRes = false) => {
+  const pageUrlLoading = (page: number, hiRes = false): string | null => {
     const url = pageUrl(page, hiRes)
     if (hiRes && zoom.value > 1 && !zooming.value) {
       return url
@@ -44,13 +44,13 @@ export default function useImageLoad(props, preloadImages) {
     return url && loadImage(url)
   }
 
-  const onImageLoad = (trigger, cb) => {
+  const onImageLoad = (trigger: number, cb: Function) => {
     nImageLoad.value = 0
     nImageLoadTrigger.value = trigger
     imageLoadCallback.value = cb
   }
 
-  const didLoadImage = (ev) => {
+  const didLoadImage = (ev: any) => {
     if (imageWidth.value === null) {
       imageWidth.value = (ev.target || ev.path[0]).naturalWidth
       imageHeight.value = (ev.target || ev.path[0]).naturalHeight

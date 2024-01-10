@@ -2,12 +2,12 @@ import { ref, computed, watch } from 'vue'
 import { easeInOut } from './utils.js'
 
 export default function useZoom(props, emit, refViewport, preloadImages) {
-  const zoom = ref(1)
-  const zoomIndex = ref(0)
+  const zoom = ref<number>(1)
+  const zoomIndex = ref<number>(0)
 
-  const zooming = ref(false)
-  const scrollLeft = ref(0)
-  const scrollTop = ref(0)
+  const zooming = ref<boolean>(false)
+  const scrollLeft = ref<number>(0)
+  const scrollTop = ref<number>(0)
   const zoomIn = (zoomAt = null) => {
     if (!canZoomIn.value) return
     zoomIndex.value += 1

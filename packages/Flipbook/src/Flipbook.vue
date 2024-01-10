@@ -115,99 +115,23 @@ import { calculatePageRotation, easeInOut } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
 import useImageLoad from './useImageLoad'
-const emit = defineEmits([
-  'flip-left-start',
-  'flip-left-end',
-  'flip-right-start',
-  'flip-right-end',
-  'zoom-start',
-  'zoom-end'
-])
+import flipbookprops from './props'
+const emit = defineEmits<{
+  'flip-left-start': [value: string]
+  'flip-left-end': [value: string]
+  'flip-right-start': [value: string]
+  'flip-right-end': [value: string]
+  'zoom-start': [value: string]
+  'zoom-end': [value: string]
+}>()
 
-const props = defineProps({
-  pages: {
-    type: Array,
-    required: true
-  },
-  pagesHiRes: {
-    type: Array,
-    default: () => []
-  },
-  flipDuration: {
-    type: Number,
-    default: 1000
-  },
-  zoomDuration: {
-    type: Number,
-    default: 500
-  },
-  zooms: {
-    type: Array,
-    default: () => [1, 2, 4]
-  },
-  perspective: {
-    type: Number,
-    default: 2400
-  },
-  nPolygons: {
-    type: Number,
-    default: 10
-  },
-  ambient: {
-    type: Number,
-    default: 0.4
-  },
-  gloss: {
-    type: Number,
-    default: 0.6
-  },
-  swipeMin: {
-    type: Number,
-    default: 3
-  },
-  singlePage: {
-    type: Boolean,
-    default: false
-  },
-  forwardDirection: {
-    validator: (val: string) => val === 'right' || val === 'left',
-    default: 'right'
-  },
-  centering: {
-    type: Boolean,
-    default: true
-  },
-  startPage: {
-    type: Number,
-    default: null
-  },
-  loadingImage: {
-    type: String,
-    default: 'spinner'
-  },
-  clickToZoom: {
-    type: Boolean,
-    default: true
-  },
-  dragToFlip: {
-    type: Boolean,
-    default: true
-  },
-  wheel: {
-    type: String,
-    default: 'scroll'
-  }
-})
-
+const props = defineProps(flipbookprops)
 const viewWidth = ref<number>(0)
 const viewHeight = ref<number>(0)
-
 const displayedPages = ref<number>(1)
-
 const currentPage = ref<number>(0)
 const firstPage = ref<number>(0)
 const secondPage = ref<number>(1)
-
 const touchStartX = ref<number | null>(null)
 const touchStartY = ref<number | null>(null)
 const maxMove = ref<number>(0)

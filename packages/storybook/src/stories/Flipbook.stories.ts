@@ -1,5 +1,7 @@
 import Flipbook from 'vue3-flipbook'
+import type { StoryObj } from '@storybook/vue3'
 import 'vue3-flipbook/dist/style.css'
+type Story = StoryObj<typeof Flipbook>
 const description = `
 vue3-flipbook  is a Vue component that displays images in 3D page flip effect
 
@@ -27,16 +29,23 @@ npm i -S vue3-flipbook
 
 `
 
-const getPages = async (isHi) => {
-  const importAll = async (r) => {
-    const images = []
+const getPages = async (isHi: boolean): Promise<(string | null)[]> => {
+  const importAll = async (r: Record<string, () => Promise<{ default: string }>>) => {
+    const images: (string | null)[] = []
     for (const path in r) {
-      images.push((await r[path]()).default)
+      const result = await r[path]()
+      images.push(result.default)
     }
     return images
   }
-  const images = import.meta.glob('@/assets/images/*.jpg')
-  const imagesLarge = import.meta.glob('@/assets/images-large/*.jpg')
+  const images = import.meta.glob('@/assets/images/*.jpg') as Record<
+    string,
+    () => Promise<{ default: string }>
+  >
+  const imagesLarge = import.meta.glob('@/assets/images-large/*.jpg') as Record<
+    string,
+    () => Promise<{ default: string }>
+  >
   return isHi ? [null, ...(await importAll(images))] : [null, ...(await importAll(imagesLarge))]
 }
 
@@ -328,8 +337,8 @@ export default {
 }
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const SlowOne = {
-  render: (args, { loaded: { pages, pagesHiRes } }) => ({
+export const SlowOne: Story = {
+  render: (args: any, { loaded: { pages, pagesHiRes } }: any) => ({
     components: { Flipbook },
     setup() {
       return { args, pages, pagesHiRes }
@@ -356,7 +365,7 @@ export const SlowOne = {
   }),
   loaders: [
     async () => ({
-      pages: await getPages(),
+      pages: await getPages(false),
       pagesHiRes: await getPages(true)
     })
   ],
