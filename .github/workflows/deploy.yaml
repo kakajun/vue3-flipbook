@@ -16,8 +16,8 @@ jobs:
         with:
           bun-version: latest
       - run: bun i
-      - run: bun run build:storybook
-      - run: bun run deploy:storybook
+      - run: bun run build-storybook
+      - run: bun run deploy-storybook
       - run: node publish.js
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_SECRET_TOKEN }}

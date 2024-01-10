@@ -24,8 +24,8 @@
     "format": "prettier --write --loglevel warn \"packages/*/src/**/*.{js,ts,json,css,less,scss,vue,html,md}\"",
     "style": "stylelint --fix 'packages/*/src/**/*.{css,scss,vue}'",
     "build": "npm run build --prefix ./packages/Flipbook",
-    "build:storybook": "npm run build-storybook --prefix ./packages/storybook",
-    "deploy:storybook": "npm run deploy-storybook --prefix ./packages/storybook",
+    "build-storybook": "npm run build-storybook --prefix ./packages/storybook",
+    "deploy-storybook": "npm run deploy-storybook --prefix ./packages/storybook",
     "test": "npm run test --prefix ./packages/Flipbook"
   },
   "devDependencies": {
