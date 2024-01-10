@@ -1,6 +1,6 @@
 {
   "name": "vue3-flipbook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "description": "A vue3 wrapper for turn.js and bookblock libraries.",
   "publishConfig": {
