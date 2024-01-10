@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
 
-const DIR_VARIABLE = path.join(process.cwd(), './packages/Flipbook/dist/')
+const DIR_VARIABLE = path.join(process.cwd(), './packages/Flipbook')
 const VERSION_TO_UPDATE = 'patch'
 
 const setVersionToJson = (version) => {
