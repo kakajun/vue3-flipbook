@@ -1,6 +1,16 @@
 import { ref, computed, watch } from 'vue'
 import useImageLoad from './useImageLoad.js'
 import { easeInOut } from './utils.js'
+import type { emitEvents, flipbookProps } from './index-types'
+interface UsePageNavigation {
+  page: number
+  canFlipLeft: boolean
+  canFlipRight: boolean
+  flipStart: void
+  flipAuto: void
+  flipRevert: void
+}
+
 export default function usePageNavigation(
   props,
   emit,
@@ -9,7 +19,7 @@ export default function usePageNavigation(
   flip,
   firstPage,
   secondPage
-) {
+): UsePageNavigation {
   const { pageUrl, onImageLoad } = useImageLoad(props, currentPage)
 
   const page = computed(() => {

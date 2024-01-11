@@ -111,21 +111,33 @@
 <script lang="ts" setup>
 import Matrix from './matrix'
 import spinner from './spinner.svg'
+import type { emitEvents, flipbookProps } from './index-types'
 import { calculatePageRotation, easeInOut } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
 import useImageLoad from './useImageLoad'
-import flipbookprops from './props'
-const emit = defineEmits<{
-  'flip-left-start': [value: string]
-  'flip-left-end': [value: string]
-  'flip-right-start': [value: string]
-  'flip-right-end': [value: string]
-  'zoom-start': [value: string]
-  'zoom-end': [value: string]
-}>()
 
-const props = defineProps(flipbookprops)
+const emit = defineEmits<emitEvents>()
+const props = withDefaults(defineProps<flipbookProps>(), {
+  pages: () => [],
+  pagesHiRes: () => [],
+  flipDuration: 1000,
+  zoomDuration: 500,
+  zooms: () => [1, 2, 4],
+  perspective: 2000,
+  nPolygons: 10,
+  ambient: 0.5,
+  gloss: 0.3,
+  swipeMin: 3,
+  singlePage: false,
+  forwardDirection: 'right',
+  centering: true,
+  startPage: 1,
+  loadingImage: spinner,
+  clickToZoom: true,
+  dragToFlip: true,
+  wheel: 'scroll'
+})
 const viewWidth = ref<number>(0)
 const viewHeight = ref<number>(0)
 const displayedPages = ref<number>(1)
@@ -155,9 +167,9 @@ const animatingCenter = ref<boolean>(false)
 const startScrollLeft = ref<number>(0)
 const startScrollTop = ref<number>(0)
 
-const preloadImages = (hiRes: boolean = false) => {
+const preloadImages = (hiRes: boolean = false): void => {
   for (let i = currentPage.value - 3; i <= currentPage.value + 3; i++) {
-    pageUrlLoading(i) // this preloads image
+    pageUrlLoading(i, false) // this preloads image
   }
   if (hiRes) {
     for (let i = currentPage.value; i < currentPage.value + displayedPages.value; i++) {
@@ -300,16 +312,15 @@ const centerOffset = computed(() => {
   return retval
 })
 
-const centerOffsetSmoothed = computed(() => Math.round(currentCenterOffset.value))
-
 const scrollLeftMin = computed(() => {
   let w = (boundingRight.value - boundingLeft.value) * zoom.value
   if (w < viewWidth.value) {
     return (
-      (boundingLeft.value + centerOffsetSmoothed.value) * zoom.value - (viewWidth.value - w) / 2
+      (boundingLeft.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value -
+      (viewWidth.value - w) / 2
     )
   } else {
-    return (boundingLeft.value + centerOffsetSmoothed.value) * zoom.value
+    return (boundingLeft.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value
   }
 })
 
@@ -317,12 +328,14 @@ const scrollLeftMax = computed(() => {
   let w = (boundingRight.value - boundingLeft.value) * zoom.value
   if (w < viewWidth.value) {
     return (
-      (boundingLeft.value + centerOffsetSmoothed.value) * zoom.value - (viewWidth.value - w) / 2
+      (boundingLeft.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value -
+      (viewWidth.value - w) / 2
     )
   } else {
-    return (boundingRight.value + centerOffsetSmoothed.value) * zoom.value - viewWidth.value
+    return (boundingRight.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value - viewWidth.value
   }
 })
+
 const scrollTopMin = computed(() => {
   let h = pageHeight.value * zoom.value
   if (h < viewHeight.value) {
@@ -702,7 +715,7 @@ const flipRevert = () => {
   animate()
 }
 
-const dragScroll = (x, y) => {
+const dragScroll = (x: number, y: number) => {
   scrollLeft.value = startScrollLeft.value - x
   scrollTop.value = startScrollTop.value - y
 }
@@ -723,7 +736,7 @@ watch(scrollTopLimited, (val) => {
   refViewport.value.scrollTop = val
 })
 
-const swipeStart = (touch) => {
+const swipeStart = (touch: MouseEvent) => {
   touchStartX.value = touch.pageX
   touchStartY.value = touch.pageY
   maxMove.value = 0
@@ -738,7 +751,7 @@ const swipeStart = (touch) => {
   }
 }
 
-const swipeMove = (touch) => {
+const swipeMove = (touch: MouseEvent) => {
   if (!touchStartX.value) return
   const x = touch.pageX - touchStartX.value
   const y = touch.pageY - touchStartY.value
@@ -764,7 +777,7 @@ const swipeMove = (touch) => {
   return true
 }
 
-const swipeEnd = (touch) => {
+const swipeEnd = (touch: MouseEvent) => {
   if (!touchStartX.value) return
   if (props.clickToZoom && maxMove.value < props.swipeMin) {
     zoomAt(touch)
@@ -780,22 +793,22 @@ const swipeEnd = (touch) => {
   activeCursor.value = null
 }
 
-const onTouchStart = (ev) => {
+const onTouchStart = (ev: MouseEvent) => {
   hasTouchEvents.value = true
   swipeStart(ev.changedTouches[0])
 }
 
-const onTouchMove = (ev) => {
+const onTouchMove = (ev: MouseEvent) => {
   if (swipeMove(ev.changedTouches[0])) {
     ev.preventDefault()
   }
 }
 
-const onTouchEnd = (ev) => {
+const onTouchEnd = (ev: MouseEvent) => {
   swipeEnd(ev.changedTouches[0])
 }
 
-const onPointerDown = (ev) => {
+const onPointerDown = (ev: MouseEvent) => {
   hasPointerEvents.value = true
   if (hasTouchEvents.value) return
   if (ev.which && ev.which !== 1) return // Ignore right-click
@@ -807,13 +820,13 @@ const onPointerDown = (ev) => {
   }
 }
 
-const onPointerMove = (ev) => {
+const onPointerMove = (ev: MouseEvent) => {
   if (!hasTouchEvents.value) {
     swipeMove(ev)
   }
 }
 
-const onPointerUp = (ev) => {
+const onPointerUp = (ev: MouseEvent) => {
   if (hasTouchEvents.value) return
   swipeEnd(ev)
   try {
@@ -823,19 +836,19 @@ const onPointerUp = (ev) => {
   }
 }
 
-const onMouseDown = (ev) => {
+const onMouseDown = (ev: MouseEvent) => {
   if (hasTouchEvents.value || hasPointerEvents.value) return
   if (ev.which && ev.which !== 1) return // Ignore right-click
   swipeStart(ev)
 }
 
-const onMouseMove = (ev) => {
+const onMouseMove = (ev: MouseEvent) => {
   if (!hasTouchEvents.value || !hasPointerEvents.value) {
     swipeMove(ev)
   }
 }
 
-const onMouseUp = (ev) => {
+const onMouseUp = (ev: MouseEvent) => {
   if (!hasTouchEvents.value || !hasPointerEvents.value) {
     swipeEnd(ev)
   }

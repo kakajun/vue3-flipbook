@@ -1,7 +1,19 @@
-import { ref, reactive, defineEmits, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, Ref } from 'vue'
 import useZoom from './useZoom'
-import { flipbookProps } from './index-types.ts'
-export default function useImageLoad(props: flipbookProps, preloadImages: any) {
+import type {UseZoom} from './useZoom'
+import type { flipbookProps } from './index-types'
+
+interface UseImageLoad {
+  imageWidth: Ref<number>
+  imageHeight: Ref<number>
+  pageUrl: (page: number, hiRes: boolean) => string | null
+  loadImage: (page: number, hiRes: boolean) => string | null
+  pageUrlLoading: (page: number, hiRes: boolean) => string | null
+  onImageLoad: (trigger: number, cb: () => void) => void
+  didLoadImage: (page: number, hiRes: boolean) => string | null
+}
+
+export default function useImageLoad(props: flipbookProps, preloadImages: any): UseImageLoad {
   const { zoom, zooming } = useZoom(props)
 
   const loadedImages = ref<object>({})
@@ -44,13 +56,13 @@ export default function useImageLoad(props: flipbookProps, preloadImages: any) {
     return url && loadImage(url)
   }
 
-  const onImageLoad = (trigger: number, cb: Function) => {
+  const onImageLoad = (trigger: number, cb: Function): void => {
     nImageLoad.value = 0
     nImageLoadTrigger.value = trigger
     imageLoadCallback.value = cb
   }
 
-  const didLoadImage = (ev: any) => {
+  const didLoadImage = (ev: MouseEvent): void => {
     if (imageWidth.value === null) {
       imageWidth.value = (ev.target || ev.path[0]).naturalWidth
       imageHeight.value = (ev.target || ev.path[0]).naturalHeight
