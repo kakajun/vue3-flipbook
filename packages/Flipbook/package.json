@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "vue-tsc && vite build",
-    "dev": "vue-tsc --declaration --emitDeclarationOnly",
+    "dev": "vue-tsc --declaration  --declarationDir typings",
     "type": "tsc src/index.ts --declaration --declarationDir typings"
   },
   "main": "./dist/vue3-flipbook.js",

@@ -141,7 +141,7 @@ const hasTouchEvents = ref<boolean>(false)
 const hasPointerEvents = ref<boolean>(false)
 const minX = ref<number>(Infinity)
 const maxX = ref<number>(-Infinity)
-const refViewport = ref<HTMLDivElement | null>(null)
+const refViewport = ref<HTMLDivElement>()
 const flip = reactive({
   progress: 0,
   direction: 'right',

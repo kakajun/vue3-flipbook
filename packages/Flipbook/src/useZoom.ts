@@ -21,7 +21,7 @@ export interface UseZoom {
 
 export default function useZoom(
   props: FlipProps,
-  refViewport: Ref<HTMLElement | null>,
+  refViewport: Ref<HTMLDivElement | undefined>,
   preloadImages: (arg0: boolean) => void | undefined
 ): UseZoom {
   const currentInstance = getCurrentInstance()
