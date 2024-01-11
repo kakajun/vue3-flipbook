@@ -51,7 +51,7 @@
               top: yMargin + 'px'
             }"
             :src="pageUrlLoading(leftPage, true)"
-            @load="didLoadImage($event)"
+            @load="didLoadImage"
           />
           <img
             v-if="showRightPage"
@@ -63,7 +63,7 @@
               top: yMargin + 'px'
             }"
             :src="pageUrlLoading(rightPage, true)"
-            @load="didLoadImage($event)"
+            @load="didLoadImage"
           />
 
           <div :style="{ opacity: flip.opacity }">
@@ -85,7 +85,7 @@
               <div
                 v-show="lighting.length"
                 class="lighting"
-                :style="{ backgroundImage: lighting }"
+                :style="{ backgroundImage: lighting || '' }"
               />
             </div>
           </div>
@@ -115,6 +115,7 @@ import type { emitEvents } from './index-types'
 import { calculatePageRotation, easeInOut } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
+import type { TouchPoint } from './useZoom'
 import useImageLoad from './useImageLoad'
 import { createConsola } from 'consola'
 import { flipProps } from './flipProps'
@@ -142,9 +143,10 @@ const hasPointerEvents = ref<boolean>(false)
 const minX = ref<number>(Infinity)
 const maxX = ref<number>(-Infinity)
 const refViewport = ref<HTMLDivElement | null>(null)
+const lighting = ref<string>('')
 const flip = reactive({
   progress: 0,
-  direction: '',
+  direction: 'right',
   frontImage: '',
   backImage: '',
   auto: false,
@@ -181,8 +183,12 @@ const {
   scrollLeft,
   scrollTop
 } = useZoom(props, emit, refViewport, preloadImages)
-const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, onImageLoad, didLoadImage } =
-  useImageLoad(props, preloadImages)
+const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, didLoadImage } = useImageLoad(
+  props,
+  preloadImages,
+  zoom,
+  zooming
+)
 
 const viewportClass = computed(() => ({
   zoom: zooming.value || zoom.value > 1,
@@ -209,13 +215,10 @@ const page = computed(() => {
   return props.pages[0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
 })
 
-const canGoForward = computed(
-  () => !flip.direction && currentPage.value < props.pages.length - displayedPages.value
-)
+const canGoForward = computed(() => currentPage.value < props.pages.length - displayedPages.value)
 
 const canGoBack = computed(
   () =>
-    !flip.direction &&
     currentPage.value >= displayedPages.value &&
     !(displayedPages.value === 1 && !pageUrl(firstPage.value - 1))
 )
@@ -362,8 +365,8 @@ onBeforeUnmount(() => {
 
 const pageScale = computed(() => {
   const vw = viewWidth.value / displayedPages.value
-  const xScale = vw / imageWidth.value
-  const yScale = viewHeight.value / imageHeight.value
+  const xScale = imageWidth.value ? vw / imageWidth.value : 1
+  const yScale = imageHeight.value ? viewHeight.value / imageHeight.value : 1
   const scale = xScale < yScale ? xScale : yScale
   if (scale < 1) {
     return scale
@@ -372,9 +375,13 @@ const pageScale = computed(() => {
   }
 })
 
-const pageWidth = computed(() => Math.round(imageWidth.value * pageScale.value))
+const pageWidth = computed(() =>
+  imageWidth.value ? Math.round(imageWidth.value * pageScale.value) : 1
+)
 
-const pageHeight = computed(() => Math.round(imageHeight.value * pageScale.value))
+const pageHeight = computed(() =>
+  imageHeight.value ? Math.round(imageHeight.value * pageScale.value) : 1
+)
 
 const onResize = () => {
   const viewport = refViewport.value
@@ -503,8 +510,6 @@ const calculateXAndZ = (rad: number, radius: number, originRight: boolean, face:
 }
 
 const makePolygonArray = (face: string) => {
-  if (!flip.direction) return []
-
   let progress = flip.progress
   let direction = flip.direction
 
@@ -549,13 +554,13 @@ const makePolygonArray = (face: string) => {
     const x0 = transformMatrix.transformX(0)
     const x1 = transformMatrix.transformX(polyWidth)
     xValues.push(x0, x1)
-    const lighting = computeLighting(pageRotation - rotate, dRotate)
+    lighting.value = String(computeLighting(pageRotation - rotate, dRotate) || '')
     radian += dRadian
     rotate += dRotate
     polygonArray.push([
       `${face}${i}`,
       image,
-      lighting,
+      lighting.value,
       bgPos,
       transformMatrix.toString(),
       Math.abs(Math.round(z))
@@ -566,7 +571,7 @@ const makePolygonArray = (face: string) => {
   return polygonArray
 }
 
-const computeLighting = (rot: number, dRotate: number) => {
+const computeLighting = (rot: number, dRotate: number): string => {
   const gradients = []
   const lightingPoints = [-0.5, -0.25, 0, 0.25, 0.5]
   if (props.ambient < 1) {
@@ -609,10 +614,10 @@ const flipStart = (direction: string, auto: boolean) => {
       if (url) {
         flip.frontImage = url
       } else {
-        console.error('flipStart error: url is null')
+        logger.error('flipStart error: url is null')
       }
 
-      flip.backImage = null
+      flip.backImage = ''
     } else {
       flip.frontImage = pageUrl(firstPage.value)
       flip.backImage = pageUrl(currentPage.value - displayedPages.value + 1)
@@ -620,7 +625,7 @@ const flipStart = (direction: string, auto: boolean) => {
   } else {
     if (displayedPages.value === 1) {
       flip.frontImage = pageUrl(currentPage.value)
-      flip.backImage = null
+      flip.backImage = ''
     } else {
       flip.frontImage = pageUrl(secondPage.value)
       flip.backImage = pageUrl(currentPage.value + displayedPages.value)
@@ -654,7 +659,9 @@ const flipAuto = (ease: boolean) => {
   const duration = props.flipDuration * (1 - flip.progress)
   const startRatio = flip.progress
   flip.auto = true
-  emit(`flip-${flip.direction}-start`, page.value)
+  flip.direction === 'left'
+    ? emit(`flip-left-start`, page.value)
+    : emit(`flip-right-start`, page.value)
   const animate = () => {
     const elapsedTime = Date.now() - startTime
     let ratio = startRatio + elapsedTime / duration
@@ -668,14 +675,9 @@ const flipAuto = (ease: boolean) => {
       } else {
         currentPage.value += displayedPages.value
       }
-      emit(`flip-${flip.direction}-end`, page.value)
-      if (displayedPages.value === 1 && flip.direction === props.forwardDirection) {
-        flip.direction = null
-      } else {
-        onImageLoad(1, () => {
-          flip.direction = null
-        })
-      }
+      flip.direction === 'left'
+        ? emit(`flip-left-end`, page.value)
+        : emit(`flip-right-end`, page.value)
       flip.auto = false
     }
   }
@@ -698,13 +700,6 @@ const flipRevert = () => {
       } else {
         firstPage.value = currentPage.value
         secondPage.value = currentPage.value + 1
-        if (displayedPages.value === 1 && flip.direction !== props.forwardDirection) {
-          flip.direction = null
-        } else {
-          onImageLoad(1, () => {
-            flip.direction = null
-          })
-        }
         flip.auto = false
       }
     })
@@ -726,30 +721,36 @@ const scrollTopLimited = computed(() => {
 })
 
 watch(scrollLeftLimited, (val) => {
-  refViewport.value.scrollLeft = val
+  if (refViewport.value) {
+    refViewport.value.scrollLeft = val
+  }
 })
 
 watch(scrollTopLimited, (val) => {
-  refViewport.value.scrollTop = val
+  if (refViewport.value) {
+    refViewport.value.scrollTop = val
+  }
 })
 
-const swipeStart = (touch: MouseEvent) => {
-  touchStartX.value = touch.pageX
-  touchStartY.value = touch.pageY
-  maxMove.value = 0
-  if (zoom.value <= 1) {
-    if (props.dragToFlip) {
-      activeCursor.value = 'grab'
+const swipeStart = (touch: TouchPoint) => {
+  if (refViewport.value) {
+    touchStartX.value = touch.pageX
+    touchStartY.value = touch.pageY
+    maxMove.value = 0
+    if (zoom.value <= 1) {
+      if (props.dragToFlip) {
+        activeCursor.value = 'grab'
+      }
+    } else {
+      startScrollLeft.value = refViewport.value.scrollLeft
+      startScrollTop.value = refViewport.value.scrollTop
+      activeCursor.value = 'all-scroll'
     }
-  } else {
-    startScrollLeft.value = refViewport.value.scrollLeft
-    startScrollTop.value = refViewport.value.scrollTop
-    activeCursor.value = 'all-scroll'
   }
 }
 
-const swipeMove = (touch: MouseEvent) => {
-  if (!touchStartX.value) return
+const swipeMove = (touch: TouchPoint) => {
+  if (!touchStartX.value || !touchStartY.value) return
   const x = touch.pageX - touchStartX.value
   const y = touch.pageY - touchStartY.value
   maxMove.value = Math.max(maxMove.value, Math.abs(x), Math.abs(y))
@@ -762,7 +763,7 @@ const swipeMove = (touch: MouseEvent) => {
   const direction = x > 0 ? 'left' : 'right'
   const canFlip = x > 0 ? canFlipLeft.value : canFlipRight.value
   const swipeMin = x > 0 ? props.swipeMin : -props.swipeMin
-  if (flip.direction === null && canFlip && x >= swipeMin) {
+  if (canFlip && x >= swipeMin) {
     flipStart(direction, false)
   }
   if (flip.direction === direction) {
@@ -774,7 +775,7 @@ const swipeMove = (touch: MouseEvent) => {
   return true
 }
 
-const swipeEnd = (touch: MouseEvent) => {
+const swipeEnd = (touch: TouchPoint) => {
   if (!touchStartX.value) return
   if (props.clickToZoom && maxMove.value < props.swipeMin) {
     zoomAt(touch)
@@ -790,53 +791,51 @@ const swipeEnd = (touch: MouseEvent) => {
   activeCursor.value = null
 }
 
-const onTouchStart = (ev: MouseEvent) => {
+const onTouchStart = (ev: TouchEvent) => {
   hasTouchEvents.value = true
   swipeStart(ev.changedTouches[0])
 }
 
-const onTouchMove = (ev: MouseEvent) => {
+const onTouchMove = (ev: TouchEvent) => {
   if (swipeMove(ev.changedTouches[0])) {
     ev.preventDefault()
   }
 }
 
-const onTouchEnd = (ev: MouseEvent) => {
+const onTouchEnd = (ev: TouchEvent) => {
   swipeEnd(ev.changedTouches[0])
 }
 
-const onPointerDown = (ev: MouseEvent) => {
+const onPointerDown = (event: PointerEvent) => {
   hasPointerEvents.value = true
   if (hasTouchEvents.value) return
-  if (ev.which && ev.which !== 1) return // Ignore right-click
-  swipeStart(ev)
-  try {
-    ev.target.setPointerCapture(ev.pointerId)
-  } catch {
-    // Handle the error silently
+  if (event.button !== 0) return // Ignore anything but left-click
+  swipeStart(event)
+  if (event.target) {
+    const targetElement = event.target as Element
+    targetElement.setPointerCapture(event.pointerId)
   }
 }
 
-const onPointerMove = (ev: MouseEvent) => {
+const onPointerMove = (ev: PointerEvent) => {
   if (!hasTouchEvents.value) {
     swipeMove(ev)
   }
 }
 
-const onPointerUp = (ev: MouseEvent) => {
+const onPointerUp = (event: PointerEvent) => {
   if (hasTouchEvents.value) return
-  swipeEnd(ev)
-  try {
-    ev.target.releasePointerCapture(ev.pointerId)
-  } catch {
-    // Handle the error silently
+  swipeEnd(event)
+  if (event.target) {
+    const targetElement = event.target as Element
+    targetElement.releasePointerCapture(event.pointerId)
   }
 }
 
-const onMouseDown = (ev: MouseEvent) => {
+const onMouseDown = (event: MouseEvent) => {
   if (hasTouchEvents.value || hasPointerEvents.value) return
-  if (ev.which && ev.which !== 1) return // Ignore right-click
-  swipeStart(ev)
+  if (event.button !== 0) return // Ignore anything but left-click
+  swipeStart(event)
 }
 
 const onMouseMove = (ev: MouseEvent) => {
@@ -895,9 +894,12 @@ watch(props.pages, (after, before) => {
   }
 })
 
-watch(props.startPage, (p) => {
-  goToPage(p)
-})
+watch(
+  () => props.startPage,
+  (p) => {
+    goToPage(p)
+  }
+)
 </script>
 
 <style lang="scss">

@@ -1,17 +1,19 @@
 import { ref, computed, Ref } from 'vue'
 import { easeInOut } from './utils.js'
-import type { emitEvents } from './index-types.ts'
-
 import type { FlipProps } from './flipProps.ts'
 
+export type TouchPoint = {
+  pageX: number
+  pageY: number
+}
 export interface UseZoom {
   zoom: Ref<number>
   zooming: Ref<boolean>
   canZoomIn: Ref<boolean>
   canZoomOut: Ref<boolean>
-  zoomIn: (ev: MouseEvent) => void
-  zoomOut: (ev: MouseEvent) => void
-  zoomAt: (ev: MouseEvent) => void
+  zoomIn: (ev: TouchPoint) => void
+  zoomOut: (ev: TouchPoint) => void
+  zoomAt: (ev: TouchPoint) => void
   onWheel: (ev: WheelEvent, hasTouchEvents: boolean) => void
   scrollLeft: Ref<number>
   scrollTop: Ref<number>
@@ -19,7 +21,7 @@ export interface UseZoom {
 
 export default function useZoom(
   props: FlipProps,
-  emit: emitEvents,
+  emit: EmitType,
   refViewport: Ref<HTMLElement | null>,
   preloadImages: (arg0: boolean) => void | undefined
 ): UseZoom {
@@ -28,7 +30,7 @@ export default function useZoom(
   const zooming = ref<boolean>(false)
   const scrollLeft = ref<number>(0)
   const scrollTop = ref<number>(0)
-  const zoomIn = (zoomAt: MouseEvent): void => {
+  const zoomIn = (zoomAt: TouchPoint): void => {
     if (!canZoomIn.value) return
     zoomIndex += 1
     if (props.zooms) {
@@ -36,7 +38,7 @@ export default function useZoom(
     }
   }
 
-  const zoomOut = (zoomAt: MouseEvent) => {
+  const zoomOut = (zoomAt: TouchPoint) => {
     if (!canZoomOut.value) return
     zoomIndex -= 1
     if (props.zooms) {
@@ -44,8 +46,8 @@ export default function useZoom(
     }
   }
 
-  const zoomTo = (pzoom: number, zoomAt: MouseEvent) => {
-    const viewport = refViewport.value
+  const zoomTo = (pzoom: number, zoomAt: TouchPoint) => {
+    const viewport = refViewport?.value
     if (viewport) {
       let fixedX, fixedY
       if (zoomAt) {
@@ -94,7 +96,7 @@ export default function useZoom(
     }
   }
 
-  const zoomAt = (zoomAtv: MouseEvent) => {
+  const zoomAt = (zoomAtv: TouchPoint) => {
     zoomIndex = (zoomIndex + 1) % props.zooms!.length
     zoomTo(props.zooms![zoomIndex], zoomAtv)
   }

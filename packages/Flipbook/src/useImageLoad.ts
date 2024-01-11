@@ -1,34 +1,34 @@
 import { ref, Ref } from 'vue'
-import useZoom from './useZoom'
-import type { UseZoom } from './useZoom'
 import type { FlipProps } from './flipProps.ts'
 
 interface UseImageLoad {
-  imageWidth: Ref<number>
-  imageHeight: Ref<number>
+  imageWidth: Ref<number | null>
+  imageHeight: Ref<number | null>
   pageUrl: (page: number, hiRes?: boolean) => string
-  loadImage: (page: number, hiRes: boolean) => string | null
+  loadImage: (url: string) => string
   pageUrlLoading: (page: number, hiRes: boolean) => string | null
   onImageLoad: (trigger: number, cb: () => void) => void
-  didLoadImage: (page: number, hiRes: boolean) => string | null
+  didLoadImage: (ev: Event) => void
 }
-
-export default function useImageLoad(props: FlipProps, preloadImages: any): UseImageLoad {
-  const { zoom, zooming } = useZoom(props: FlipProps)
-
-  const loadedImages = ref<object>({})
+export default function useImageLoad(
+  props: FlipProps,
+  preloadImages: any,
+  zoom: Ref<number>,
+  zooming: Ref<boolean>
+): UseImageLoad {
+  const loadedImages = ref<Record<string, boolean>>({})
   const nImageLoad = ref<number>(0)
   const nImageLoadTrigger = ref<number>(0)
   const imageLoadCallback = ref<Function | null>(null)
-  const imageWidth = ref<number>()
-  const imageHeight = ref<number>()
+  const imageWidth = ref<number| null>(null)
+  const imageHeight = ref<number| null>(null)
 
-  const pageUrl = (page: number, hiRes: boolean = false): string => {
-    if (hiRes && zoom.value > 1 && !zooming.value) {
-      const url = props.pagesHiRes?[page]
-      return url ? url : ''
-    }
-    return props.pages?[page] || ''
+  const pageUrl = (page: number, hiRes = false): string => {
+     if (hiRes && zoom.value > 1 && !zooming.value) {
+        return props.pagesHiRes?[page] || ''
+      }else {
+        return props.pages?[page] || ''
+      }
   }
 
   const loadImage = (url: string): string => {
@@ -43,7 +43,7 @@ export default function useImageLoad(props: FlipProps, preloadImages: any): UseI
           loadedImages.value[url] = true
         }
         img.src = url
-        return props.loadingImage
+        return props.loadingImage || ''
       }
     }
   }
@@ -62,10 +62,13 @@ export default function useImageLoad(props: FlipProps, preloadImages: any): UseI
     imageLoadCallback.value = cb
   }
 
-  const didLoadImage = (ev: MouseEvent): void => {
-    if (imageWidth.value === null) {
-      imageWidth.value = (ev.target || ev.path[0]).naturalWidth
-      imageHeight.value = (ev.target || ev.path[0]).naturalHeight
+  const didLoadImage = (ev: Event) => {
+    const target = ev.target as HTMLImageElement | null
+    const path0 = (ev as any).path ? ((ev as any).path[0] as HTMLImageElement) : null
+    const imgElement = target || path0
+    if (imageWidth.value === null && imgElement) {
+      imageWidth.value = imgElement.naturalWidth
+      imageHeight.value = imgElement.naturalHeight
       preloadImages()
     }
     if (!imageLoadCallback.value) return
