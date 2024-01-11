@@ -85,7 +85,7 @@
               <div
                 v-show="lighting.length"
                 class="lighting"
-                :style="{ backgroundImage: lighting || '' }"
+                :style="{ backgroundImage: lighting }"
               />
             </div>
           </div>
@@ -143,7 +143,6 @@ const hasPointerEvents = ref<boolean>(false)
 const minX = ref<number>(Infinity)
 const maxX = ref<number>(-Infinity)
 const refViewport = ref<HTMLDivElement | null>(null)
-const lighting = ref<string>('')
 const flip = reactive({
   progress: 0,
   direction: 'right',
@@ -509,6 +508,9 @@ const calculateXAndZ = (rad: number, radius: number, originRight: boolean, face:
   return { x, z }
 }
 
+type Polygon = [string, string, string, string, string, number]
+type PolygonArray = Polygon[]
+
 const makePolygonArray = (face: string) => {
   let progress = flip.progress
   let direction = flip.direction
@@ -541,7 +543,7 @@ const makePolygonArray = (face: string) => {
 
   minX.value = Infinity
   maxX.value = -Infinity
-  const polygonArray = []
+  const polygonArray: PolygonArray = []
   const xValues = []
   for (let i = 0; i < props.nPolygons; i++) {
     const bgPos = `${(i / (props.nPolygons - 1)) * 100}% 0px`
@@ -554,16 +556,16 @@ const makePolygonArray = (face: string) => {
     const x0 = transformMatrix.transformX(0)
     const x1 = transformMatrix.transformX(polyWidth)
     xValues.push(x0, x1)
-    lighting.value = String(computeLighting(pageRotation - rotate, dRotate) || '')
+    const lighting = computeLighting(pageRotation - rotate, dRotate) || ''
     radian += dRadian
     rotate += dRotate
     polygonArray.push([
-      `${face}${i}`,
-      image,
-      lighting.value,
-      bgPos,
-      transformMatrix.toString(),
-      Math.abs(Math.round(z))
+      `${face}${i}` as string,
+      image as string,
+      lighting as string,
+      bgPos as string,
+      transformMatrix.toString() as string,
+      Math.abs(Math.round(z)) as number
     ])
   }
   maxX.value = Math.max(...xValues)

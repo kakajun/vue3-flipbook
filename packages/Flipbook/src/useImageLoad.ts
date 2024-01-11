@@ -6,7 +6,7 @@ interface UseImageLoad {
   imageHeight: Ref<number | null>
   pageUrl: (page: number, hiRes?: boolean) => string
   loadImage: (url: string) => string
-  pageUrlLoading: (page: number, hiRes: boolean) => string | null
+  pageUrlLoading: (page: number, hiRes: boolean) => string | undefined
   onImageLoad: (trigger: number, cb: () => void) => void
   didLoadImage: (ev: Event) => void
 }
@@ -20,15 +20,15 @@ export default function useImageLoad(
   const nImageLoad = ref<number>(0)
   const nImageLoadTrigger = ref<number>(0)
   const imageLoadCallback = ref<Function | null>(null)
-  const imageWidth = ref<number| null>(null)
-  const imageHeight = ref<number| null>(null)
+  const imageWidth = ref<number | null>(null)
+  const imageHeight = ref<number | null>(null)
 
   const pageUrl = (page: number, hiRes = false): string => {
-     if (hiRes && zoom.value > 1 && !zooming.value) {
-        return props.pagesHiRes?[page] || ''
-      }else {
-        return props.pages?[page] || ''
-      }
+    if (hiRes && zoom.value > 1 && !zooming.value) {
+      return (page < props.pagesHiRes!.length ? props.pagesHiRes?.[page] : '') || ''
+    } else {
+      return (page < props.pages!.length ? props.pages?.[page] : '') || ''
+    }
   }
 
   const loadImage = (url: string): string => {
@@ -48,7 +48,7 @@ export default function useImageLoad(
     }
   }
 
-  const pageUrlLoading = (page: number, hiRes = false): string | null => {
+  const pageUrlLoading = (page: number, hiRes = false): string | undefined => {
     const url = pageUrl(page, hiRes)
     if (hiRes && zoom.value > 1 && !zooming.value) {
       return url
@@ -63,12 +63,9 @@ export default function useImageLoad(
   }
 
   const didLoadImage = (ev: Event) => {
-    const target = ev.target as HTMLImageElement | null
-    const path0 = (ev as any).path ? ((ev as any).path[0] as HTMLImageElement) : null
-    const imgElement = target || path0
-    if (imageWidth.value === null && imgElement) {
-      imageWidth.value = imgElement.naturalWidth
-      imageHeight.value = imgElement.naturalHeight
+    if (imageWidth.value === null) {
+      imageWidth.value = (ev.target || ev.path[0]).naturalWidth
+      imageHeight.value = (ev.target || ev.path[0]).naturalHeight
       preloadImages()
     }
     if (!imageLoadCallback.value) return
