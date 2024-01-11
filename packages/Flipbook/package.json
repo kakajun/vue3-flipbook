@@ -27,7 +27,9 @@
     "url": "https://https://github.com/kakajun/vue3-flipbook"
   },
   "scripts": {
-    "build": "vue-tsc && vite build"
+    "build": "vue-tsc && vite build",
+    "dev": "vue-tsc --declaration --emitDeclarationOnly",
+    "type": "tsc src/index.ts --declaration --declarationDir typings"
   },
   "main": "./dist/vue3-flipbook.js",
   "module": "./dist/vue3-flipbook.mjs",

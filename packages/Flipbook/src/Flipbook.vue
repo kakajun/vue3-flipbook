@@ -110,7 +110,6 @@
 
 <script lang="ts" setup>
 import Matrix from './matrix'
-import spinner from './spinner.svg'
 import type { emitEvents } from './index-types'
 import { calculatePageRotation, easeInOut } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
@@ -181,7 +180,7 @@ const {
   onWheel,
   scrollLeft,
   scrollTop
-} = useZoom(props, emit, refViewport, preloadImages)
+} = useZoom(props, refViewport, preloadImages)
 const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, didLoadImage } = useImageLoad(
   props,
   preloadImages,
