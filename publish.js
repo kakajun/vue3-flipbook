@@ -14,6 +14,7 @@ const setVersionToJson = (version) => {
 }
 
 const run = async () => {
+
   if (!process.env.NPM_AUTH_TOKEN) throw new Error('Merge-release requires NPM_AUTH_TOKEN')
   // execSync('node ./postbuild.js')
 

@@ -26,6 +26,8 @@
     "build": "npm run build --prefix ./packages/Flipbook",
     "build-storybook": "npm run build-storybook --prefix ./packages/storybook",
     "deploy-storybook": "npm run deploy-storybook --prefix ./packages/storybook",
+    "publish": "npm run build --prefix ./packages/Flipbook && node publish.js",
+    "publishtest": "node publish.js",
     "test": "npm run test --prefix ./packages/Flipbook"
   },
   "devDependencies": {
