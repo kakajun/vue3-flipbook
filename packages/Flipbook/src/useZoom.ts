@@ -1,4 +1,4 @@
-import { ref, computed, Ref } from 'vue'
+import { ref, computed, Ref, getCurrentInstance } from 'vue'
 import { easeInOut } from './utils.js'
 import type { FlipProps } from './flipProps.ts'
 
@@ -21,10 +21,13 @@ export interface UseZoom {
 
 export default function useZoom(
   props: FlipProps,
-  emit: EmitType,
   refViewport: Ref<HTMLElement | null>,
   preloadImages: (arg0: boolean) => void | undefined
 ): UseZoom {
+  const currentInstance = getCurrentInstance()
+  if (!currentInstance) {
+    throw new Error('useDrawer() can only be used inside setup() or functional components!')
+  }
   const zoom = ref<number>(1)
   let zoomIndex = 0
   const zooming = ref<boolean>(false)
@@ -68,7 +71,7 @@ export default function useZoom(
       const endY = (containerFixedY / start) * end - fixedY
       const t0 = Date.now()
       zooming.value = true
-      emit('zoom-start', pzoom)
+      currentInstance?.emit('zoom-start', pzoom)
       const animate = () => {
         requestAnimationFrame(() => {
           const t = Date.now() - t0
@@ -81,7 +84,7 @@ export default function useZoom(
           if (t < props.zoomDuration!) {
             animate()
           } else {
-            emit('zoom-end', pzoom)
+            currentInstance?.emit('zoom-end', pzoom)
             zooming.value = false
             zoom.value = pzoom
             scrollLeft.value = endX

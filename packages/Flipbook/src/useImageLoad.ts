@@ -7,19 +7,19 @@ interface UseImageLoad {
   pageUrl: (page: number, hiRes?: boolean) => string
   loadImage: (url: string) => string
   pageUrlLoading: (page: number, hiRes: boolean) => string | undefined
-  onImageLoad: (trigger: number, cb: () => void) => void
+  // onImageLoad: (trigger: number, cb: () => void) => void
   didLoadImage: (ev: Event) => void
 }
 export default function useImageLoad(
   props: FlipProps,
-  preloadImages: any,
+  preloadImages: () => void, // Add the missing type annotation here
   zoom: Ref<number>,
   zooming: Ref<boolean>
 ): UseImageLoad {
   const loadedImages = ref<Record<string, boolean>>({})
   const nImageLoad = ref<number>(0)
   const nImageLoadTrigger = ref<number>(0)
-  const imageLoadCallback = ref<Function | null>(null)
+  const imageLoadCallback = ref<() => void | null>()
   const imageWidth = ref<number | null>(null)
   const imageHeight = ref<number | null>(null)
 
@@ -56,23 +56,23 @@ export default function useImageLoad(
     return url && loadImage(url)
   }
 
-  const onImageLoad = (trigger: number, cb: Function): void => {
-    nImageLoad.value = 0
-    nImageLoadTrigger.value = trigger
-    imageLoadCallback.value = cb
-  }
+  // const onImageLoad = (trigger: number, cb: Function): void => {
+  //   nImageLoad.value = 0
+  //   nImageLoadTrigger.value = trigger
+  //   imageLoadCallback.value = cb
+  // }
 
   const didLoadImage = (ev: Event) => {
     if (imageWidth.value === null) {
-      imageWidth.value = (ev.target || ev.path[0]).naturalWidth
-      imageHeight.value = (ev.target || ev.path[0]).naturalHeight
+      imageWidth.value = (ev.target as HTMLImageElement).naturalWidth
+      imageHeight.value = (ev.target as HTMLImageElement).naturalHeight
       preloadImages()
     }
     if (!imageLoadCallback.value) return
     if (++nImageLoad.value >= nImageLoadTrigger.value) {
-      imageLoadCallback.value()
-      imageLoadCallback.value = null
+      imageLoadCallback.value!()
     }
+    imageLoadCallback.value = undefined
   }
 
   return {
@@ -81,7 +81,7 @@ export default function useImageLoad(
     pageUrl,
     loadImage,
     pageUrlLoading,
-    onImageLoad,
+    // onImageLoad,
     didLoadImage
   }
 }

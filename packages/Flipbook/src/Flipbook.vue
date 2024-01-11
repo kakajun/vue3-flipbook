@@ -207,14 +207,14 @@ const canFlipRight = computed(() => {
 })
 
 const numPages = computed(() => {
-  return props.pages[0] === null ? props.pages.length - 1 : props.pages.length
+  return props.pages![0] === null ? props.pages!.length - 1 : props.pages!.length
 })
 
 const page = computed(() => {
-  return props.pages[0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
+  return props.pages![0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
 })
 
-const canGoForward = computed(() => currentPage.value < props.pages.length - displayedPages.value)
+const canGoForward = computed(() => currentPage.value < props.pages!.length - displayedPages.value)
 
 const canGoBack = computed(
   () =>
@@ -397,7 +397,7 @@ const onResize = () => {
 }
 
 const fixFirstPage = () => {
-  if (displayedPages.value === 1 && currentPage.value === 0 && props.pages.length && !pageUrl(0)) {
+  if (displayedPages.value === 1 && currentPage.value === 0 && props.pages!.length && !pageUrl(0)) {
     currentPage.value++
   }
 }
@@ -702,6 +702,13 @@ const flipRevert = () => {
       } else {
         firstPage.value = currentPage.value
         secondPage.value = currentPage.value + 1
+        // if (displayedPages.value === 1 && flip.direction !== props.forwardDirection) {
+        //   flip.direction = null
+        // } else {
+        //   onImageLoad(1, () => {
+        //     flip.direction = null
+        //   })
+        // }
         flip.auto = false
       }
     })
@@ -852,10 +859,11 @@ const onMouseUp = (ev: MouseEvent) => {
   }
 }
 
-const goToPage = (p: unknown) => {
+const goToPage = (p: number) => {
   if (p === null || p === page.value) return
 
-  currentPage.value = props.pages[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1
+  currentPage.value =
+    (props.pages ?? [])[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1
 
   minX.value = Infinity
   maxX.value = -Infinity
@@ -887,14 +895,17 @@ watch(centerOffset, () => {
   animate()
 })
 
-watch(props.pages, (after, before) => {
-  fixFirstPage()
-  if (!before?.length && after?.length) {
-    if (props.startPage > 1 && after[0] == null) {
-      currentPage.value++
+watch(
+  () => props.pages,
+  (after, before) => {
+    fixFirstPage()
+    if (!before?.length && after?.length) {
+      if (props.startPage > 1 && after[0] == null) {
+        currentPage.value++
+      }
     }
   }
-})
+)
 
 watch(
   () => props.startPage,

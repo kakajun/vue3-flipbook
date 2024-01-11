@@ -1,25 +1,31 @@
 {
   "compilerOptions": {
-    "outDir": "./outjs/",
-    "declaration": true,
-    "esModuleInterop": false,
-    "sourceMap": true,
-    "module": "esnext",
-    "target": "es5",
-    "experimentalDecorators": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "moduleResolution": "node",
-    "jsx": "preserve",
-    "lib": ["es2019", "es2015", "dom"],
-    "allowJs": true,
-    "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "baseUrl": "."
-  }
+    "jsx": "preserve",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "types/index.d.ts",
+    "types/global.d.ts"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
