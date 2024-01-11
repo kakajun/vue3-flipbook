@@ -36,13 +36,13 @@
     "dist/*"
   ],
   "dependencies": {
-    "vue": "^3.3.11",
-    "vue-material-design-icons": "^5.1.2"
+    "vue": "^3.4.8",
+    "vue-material-design-icons": "^5.2.0"
   },
   "devDependencies": {
     "rematrix": "^0.7.2",
     "sass": "^1.69.7",
-    "vite": "^5.0.10",
+    "vite": "^5.0.11",
     "typescript": "^5.3.3"
   }
 }

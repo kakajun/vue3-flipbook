@@ -111,33 +111,22 @@
 <script lang="ts" setup>
 import Matrix from './matrix'
 import spinner from './spinner.svg'
-import type { emitEvents, flipbookProps } from './index-types'
+import type { emitEvents } from './index-types'
 import { calculatePageRotation, easeInOut } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
 import useImageLoad from './useImageLoad'
-
-const emit = defineEmits<emitEvents>()
-const props = withDefaults(defineProps<flipbookProps>(), {
-  pages: () => [],
-  pagesHiRes: () => [],
-  flipDuration: 1000,
-  zoomDuration: 500,
-  zooms: () => [1, 2, 4],
-  perspective: 2000,
-  nPolygons: 10,
-  ambient: 0.5,
-  gloss: 0.3,
-  swipeMin: 3,
-  singlePage: false,
-  forwardDirection: 'right',
-  centering: true,
-  startPage: 1,
-  loadingImage: spinner,
-  clickToZoom: true,
-  dragToFlip: true,
-  wheel: 'scroll'
+import { createConsola } from 'consola'
+import { flipProps } from './flipProps'
+const logger = createConsola({
+  level: -1 // 设置日志级别为 silent
 })
+
+// 现在，这个文件中的 consola 日志将不会被输出
+logger.info('This will not be logged')
+const emit = defineEmits<emitEvents>()
+const props = defineProps(flipProps)
+
 const viewWidth = ref<number>(0)
 const viewHeight = ref<number>(0)
 const displayedPages = ref<number>(1)
@@ -152,17 +141,17 @@ const hasTouchEvents = ref<boolean>(false)
 const hasPointerEvents = ref<boolean>(false)
 const minX = ref<number>(Infinity)
 const maxX = ref<number>(-Infinity)
-const refViewport = ref<HTMLElement | null>(null)
+const refViewport = ref<HTMLDivElement | null>(null)
 const flip = reactive({
   progress: 0,
-  direction: null,
-  frontImage: null,
-  backImage: null,
+  direction: '',
+  frontImage: '',
+  backImage: '',
   auto: false,
   opacity: 1
 })
 
-const currentCenterOffset = ref<number | null>(null)
+const currentCenterOffset = ref<number>(0)
 const animatingCenter = ref<boolean>(false)
 const startScrollLeft = ref<number>(0)
 const startScrollTop = ref<number>(0)
@@ -306,12 +295,16 @@ const centerOffset = computed(() => {
   let retval = props.centering
     ? Math.round(viewWidth.value / 2 - (boundingLeft.value + boundingRight.value) / 2)
     : 0
-  if (currentCenterOffset.value === null && imageWidth.value !== null) {
+  if (currentCenterOffset.value === 0 && imageWidth.value !== null) {
+    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
     currentCenterOffset.value = retval
   }
   return retval
 })
 
+const centerOffsetSmoothed = computed(() => {
+  return Math.round(currentCenterOffset.value)
+})
 const scrollLeftMin = computed(() => {
   let w = (boundingRight.value - boundingLeft.value) * zoom.value
   if (w < viewWidth.value) {
@@ -355,18 +348,16 @@ const scrollTopMax = computed(() => {
 })
 
 onMounted(() => {
+  onResize()
   window.addEventListener('resize', onResize, {
     passive: true
   })
-  onResize()
   zoom.value = props.zooms[0]
   goToPage(props.startPage)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize, {
-    passive: true
-  })
+  window.removeEventListener('resize', onResize)
 })
 
 const pageScale = computed(() => {
@@ -418,7 +409,7 @@ const flipRight = () => {
 }
 
 // 计算页面X坐标和原点位置
-const calculatePageXAndOrigin = (face, direction) => {
+const calculatePageXAndOrigin = (face: string, direction: string) => {
   let pageX = xMargin.value
   let originRight = false
   if (displayedPages.value === 1) {
@@ -464,7 +455,7 @@ const calculatePageXAndOrigin = (face, direction) => {
 }
 
 // 计算页面矩阵
-const calculatePageMatrix = (pageX, originRight, pageRotation) => {
+const calculatePageMatrix = (pageX: number, originRight: boolean, pageRotation: number) => {
   const pageMatrix = new Matrix()
   pageMatrix.translate(viewWidth.value / 2)
   pageMatrix.perspective(props.perspective)
@@ -484,7 +475,7 @@ const calculatePageMatrix = (pageX, originRight, pageRotation) => {
   return pageMatrix
 }
 
-const calculateThetaAndRadius = (progress) => {
+const calculateThetaAndRadius = (progress: number) => {
   let theta
   if (progress < 0.5) theta = progress * 2 * Math.PI
   else theta = (1 - (progress - 0.5) * 2) * Math.PI
@@ -498,7 +489,7 @@ const calculateThetaAndRadius = (progress) => {
   }
 }
 
-const calculateXAndZ = (rad, radius, originRight, face) => {
+const calculateXAndZ = (rad: number, radius: number, originRight: boolean, face: string) => {
   let x = Math.sin(rad) * radius
   if (originRight) {
     x = pageWidth.value - x
@@ -511,7 +502,7 @@ const calculateXAndZ = (rad, radius, originRight, face) => {
   return { x, z }
 }
 
-const makePolygonArray = (face) => {
+const makePolygonArray = (face: string) => {
   if (!flip.direction) return []
 
   let progress = flip.progress
@@ -575,7 +566,7 @@ const makePolygonArray = (face) => {
   return polygonArray
 }
 
-const computeLighting = (rot, dRotate) => {
+const computeLighting = (rot: number, dRotate: number) => {
   const gradients = []
   const lightingPoints = [-0.5, -0.25, 0, 0.25, 0.5]
   if (props.ambient < 1) {
@@ -611,10 +602,16 @@ const computeLighting = (rot, dRotate) => {
   return gradients.join(',')
 }
 
-const flipStart = (direction, auto) => {
+const flipStart = (direction: string, auto: boolean) => {
   if (direction !== props.forwardDirection) {
     if (displayedPages.value === 1) {
-      flip.frontImage = pageUrl(currentPage.value - 1)
+      const url = pageUrl(currentPage.value - 1)
+      if (url) {
+        flip.frontImage = url
+      } else {
+        console.error('flipStart error: url is null')
+      }
+
       flip.backImage = null
     } else {
       flip.frontImage = pageUrl(firstPage.value)
@@ -652,7 +649,7 @@ const flipStart = (direction, auto) => {
   })
 }
 
-const flipAuto = (ease) => {
+const flipAuto = (ease: boolean) => {
   const startTime = Date.now()
   const duration = props.flipDuration * (1 - flip.progress)
   const startRatio = flip.progress
@@ -854,7 +851,7 @@ const onMouseUp = (ev: MouseEvent) => {
   }
 }
 
-const goToPage = (p) => {
+const goToPage = (p: unknown) => {
   if (p === null || p === page.value) return
 
   currentPage.value = props.pages[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1

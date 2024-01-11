@@ -8,48 +8,48 @@ import {
   toString
 } from 'rematrix'
 
+import type { Matrix3D } from 'rematrix'
+
 export default class Matrix {
-  constructor(arg) {
+  private m: Matrix3D
+
+  constructor(arg?: Matrix3D) {
     if (arg) {
-      if (arg.m) {
-        this.m = [...arg.m]
-      } else {
-        this.m = [...arg]
-      }
+      this.m = [...arg]
     } else {
       this.m = identity()
     }
   }
 
-  clone() {
-    return new Matrix(this)
+  public clone(): Matrix {
+    return new Matrix(this.m)
   }
 
-  multiply(m) {
+  public multiply(m: Matrix3D): void {
     this.m = multiply(this.m, m)
   }
 
-  perspective(d) {
+  public perspective(d: number): void {
     this.multiply(perspective(d))
   }
 
-  transformX(x) {
+  public transformX(x: number): number {
     return (x * this.m[0] + this.m[12]) / (x * this.m[3] + this.m[15])
   }
 
-  translate(x, y) {
+  public translate(x: number, y?: number): void {
     this.multiply(translate(x, y))
   }
 
-  translate3d(x, y, z) {
+  public translate3d(x: number, y: number, z: number): void {
     this.multiply(translate3d(x, y, z))
   }
 
-  rotateY(deg) {
+  public rotateY(deg: number): void {
     this.multiply(rotateY(deg))
   }
 
-  toString() {
+  public toString(): string {
     return toString(this.m)
   }
 }

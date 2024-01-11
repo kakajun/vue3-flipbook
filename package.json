@@ -33,18 +33,19 @@
     "@typescript-eslint/parser": "^6.18.1",
     "eslint": "8.56.0",
     "eslint-plugin-storybook": "^0.6.15",
-    "eslint-plugin-vue": "^9.19.2",
-    "gh-pages": "^6.1.0",
-    "husky": "4.3.8",
+    "eslint-plugin-vue": "^9.20.0",
+    "gh-pages": "^6.1.1",
+    "husky": "8.0.3",
     "lint-staged": "^15.2.0",
     "postcss-html": "^1.5.0",
     "prettier": "^3.1.1",
-    "stylelint": "15.11.0",
+    "stylelint": "16.1.0",
     "stylelint-config-recommended": "^14.0.0",
     "stylelint-config-recommended-vue": "^1.5.0",
-    "stylelint-config-standard": "^35.0.0",
+    "stylelint-config-standard": "^36.0.0",
     "typescript": "^5.3.3",
-    "vue-eslint-parser": "^9.3.2"
+    "consola": "^3.2.3",
+    "vue-eslint-parser": "^9.4.0"
   },
   "lint-staged": {
     "*.{js,vue}": [

@@ -1,19 +1,20 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, Ref, ComputedRef } from 'vue'
 import useImageLoad from './useImageLoad.js'
 import { easeInOut } from './utils.js'
-import type { emitEvents, flipbookProps } from './index-types'
+import type { emitEvents } from './index-types'
+import type { FlipProps } from './flipProps.ts'
 interface UsePageNavigation {
-  page: number
-  canFlipLeft: boolean
-  canFlipRight: boolean
+  page: Ref<number>
+  canFlipLeft: ComputedRef<boolean>
+  canFlipRight: ComputedRef<boolean>
   flipStart: void
   flipAuto: void
   flipRevert: void
 }
 
 export default function usePageNavigation(
-  props,
-  emit,
+  props: FlipProps,
+  emit: emitEvents,
   currentPage,
   displayedPages,
   flip,

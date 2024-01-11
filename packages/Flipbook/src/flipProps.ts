@@ -1,10 +1,12 @@
-export default {
+import type { ExtractPropTypes } from 'vue'
+
+export const flipProps = {
   pages: {
-    type: Array,
+    type: Array as PropType<string[]>,
     required: true
   },
   pagesHiRes: {
-    type: Array,
+    type: Array as PropType<string[]>,
     default: () => []
   },
   flipDuration: {
@@ -16,7 +18,7 @@ export default {
     default: 500
   },
   zooms: {
-    type: Array,
+    type: Array as PropType<number[]>,
     default: () => [1, 2, 4]
   },
   perspective: {
@@ -72,3 +74,5 @@ export default {
     default: 'scroll'
   }
 }
+
+export declare type FlipProps = Partial<ExtractPropTypes<typeof flipProps>>
