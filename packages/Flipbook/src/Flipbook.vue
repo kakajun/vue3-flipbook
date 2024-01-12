@@ -109,9 +109,16 @@
 </template>
 
 <script lang="ts" setup>
-import Matrix from './matrix'
 import type { emitEvents } from './index-types'
-import { calculatePageRotation, easeInOut } from './utils.js'
+import {
+  calculateThetaAndRadius,
+  calculatePageRotation,
+  easeInOut,
+  calculatePageXAndOrigin,
+  calculatePageMatrix,
+  calculateRotate,
+  computeLighting
+} from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
 import type { TouchPoint } from './useZoom'
@@ -414,87 +421,6 @@ const flipRight = () => {
   }
 }
 
-// 计算页面X坐标和原点位置
-const calculatePageXAndOrigin = (face: string, direction: string) => {
-  let pageX = xMargin.value
-  let originRight = false
-  if (displayedPages.value === 1) {
-    if (props.forwardDirection === 'right') {
-      if (face === 'back') {
-        originRight = true
-        pageX = xMargin.value - pageWidth.value
-      }
-    } else {
-      if (direction === 'left') {
-        if (face === 'back') {
-          pageX = pageWidth.value - xMargin.value
-        } else {
-          originRight = true
-        }
-      } else {
-        if (face === 'front') {
-          pageX = pageWidth.value - xMargin.value
-        } else {
-          originRight = true
-        }
-      }
-    }
-  } else {
-    if (direction === 'left') {
-      if (face === 'back') {
-        pageX = viewWidth.value / 2
-      } else {
-        originRight = true
-      }
-    } else {
-      if (face === 'front') {
-        pageX = viewWidth.value / 2
-      } else {
-        originRight = true
-      }
-    }
-  }
-  return {
-    pageX,
-    originRight
-  }
-}
-
-// 计算页面矩阵
-const calculatePageMatrix = (pageX: number, originRight: boolean, pageRotation: number) => {
-  const pageMatrix = new Matrix()
-  pageMatrix.translate(viewWidth.value / 2)
-  pageMatrix.perspective(props.perspective)
-  pageMatrix.translate(-viewWidth.value / 2)
-  pageMatrix.translate(pageX, yMargin.value)
-
-  if (pageRotation) {
-    if (originRight) {
-      pageMatrix.translate(pageWidth.value)
-    }
-    pageMatrix.rotateY(pageRotation)
-    if (originRight) {
-      pageMatrix.translate(-pageWidth.value)
-    }
-  }
-
-  return pageMatrix
-}
-
-const calculateThetaAndRadius = (progress: number) => {
-  let theta
-  if (progress < 0.5) theta = progress * 2 * Math.PI
-  else theta = (1 - (progress - 0.5) * 2) * Math.PI
-  if (theta == 0) theta = 1e-9
-
-  const radius = pageWidth.value / theta
-
-  return {
-    theta,
-    radius
-  }
-}
-
 const calculateXAndZ = (rad: number, radius: number, originRight: boolean, face: string) => {
   let x = Math.sin(rad) * radius
   if (originRight) {
@@ -514,7 +440,6 @@ type PolygonArray = Polygon[]
 const makePolygonArray = (face: string) => {
   let progress = flip.progress
   let direction = flip.direction
-
   if (displayedPages.value === 1 && direction !== props.forwardDirection) {
     progress = 1 - progress
     direction = props.forwardDirection
@@ -524,17 +449,30 @@ const makePolygonArray = (face: string) => {
 
   let image = face === 'front' ? flip.frontImage : flip.backImage
   const polyWidth = pageWidth.value / props.nPolygons
-  const { pageX, originRight } = calculatePageXAndOrigin(face, direction)
+  const { pageX, originRight } = calculatePageXAndOrigin(
+    face,
+    direction,
+    xMargin.value,
+    displayedPages.value,
+    props.forwardDirection,
+    pageWidth.value,
+    viewWidth.value
+  )
   const pageRotation = calculatePageRotation(progress, direction, face)
-  const pageMatrix = calculatePageMatrix(pageX, originRight, pageRotation)
-  const { theta, radius } = calculateThetaAndRadius(progress)
+  const pageMatrix = calculatePageMatrix(
+    pageX,
+    originRight,
+    pageRotation,
+    viewWidth.value,
+    props.perspective,
+    yMargin.value,
+    pageWidth.value
+  )
+  const { theta, radius } = calculateThetaAndRadius(progress, pageWidth.value)
 
   let radian = 0
   let dRadian = theta / props.nPolygons
-  let rotate = originRight
-    ? (-theta / Math.PI) * 180 + (dRadian / 2 / Math.PI) * 180
-    : (dRadian / 2 / Math.PI) * 180
-
+  let rotate = calculateRotate(theta, dRadian, originRight)
   let dRotate = (dRadian / Math.PI) * 180
   if (face === 'back') {
     rotate = -rotate
@@ -556,7 +494,8 @@ const makePolygonArray = (face: string) => {
     const x0 = transformMatrix.transformX(0)
     const x1 = transformMatrix.transformX(polyWidth)
     xValues.push(x0, x1)
-    const lighting = computeLighting(pageRotation - rotate, dRotate) || ''
+    const lighting =
+      computeLighting(pageRotation - rotate, dRotate, props.ambient, props.gloss) || ''
     radian += dRadian
     rotate += dRotate
     polygonArray.push([
@@ -573,66 +512,21 @@ const makePolygonArray = (face: string) => {
   return polygonArray
 }
 
-const computeLighting = (rot: number, dRotate: number): string => {
-  const gradients = []
-  const lightingPoints = [-0.5, -0.25, 0, 0.25, 0.5]
-  if (props.ambient < 1) {
-    const blackness = 1 - props.ambient
-    const diffuse = lightingPoints.map(
-      (d) => (1 - Math.cos(((rot - dRotate * d) / 180) * Math.PI)) * blackness
-    )
-    gradients.push(
-      `linear-gradient(to right, rgba(0, 0, 0, ${diffuse[0]}), rgba(0, 0, 0, ${diffuse[1]}) 25%, rgba(0, 0, 0, ${diffuse[2]}) 50%, rgba(0, 0, 0, ${diffuse[3]}) 75%, rgba(0, 0, 0, ${diffuse[4]}))`
-    )
-  }
-
-  if (props.gloss > 0) {
-    const DEG = 30
-    const POW = 200
-    const specular = lightingPoints.map((d) =>
-      Math.max(
-        Math.cos(((rot + DEG - dRotate * d) / 180) * Math.PI) ** POW,
-        Math.cos(((rot - DEG - dRotate * d) / 180) * Math.PI) ** POW
-      )
-    )
-    gradients.push(
-      `linear-gradient(to right, rgba(255, 255, 255, ${
-        specular[0] * props.gloss
-      }), rgba(255, 255, 255, ${specular[1] * props.gloss}) 25%, rgba(255, 255, 255, ${
-        specular[2] * props.gloss
-      }) 50%, rgba(255, 255, 255, ${specular[3] * props.gloss}) 75%, rgba(255, 255, 255, ${
-        specular[4] * props.gloss
-      }))`
-    )
-  }
-
-  return gradients.join(',')
-}
-
-const flipStart = (direction: string, auto: boolean) => {
+const setFlipImages = (direction: string) => {
   if (direction !== props.forwardDirection) {
-    if (displayedPages.value === 1) {
-      const url = pageUrl(currentPage.value - 1)
-      if (url) {
-        flip.frontImage = url
-      } else {
-        logger.error('flipStart error: url is null')
-      }
-
-      flip.backImage = ''
-    } else {
-      flip.frontImage = pageUrl(firstPage.value)
-      flip.backImage = pageUrl(currentPage.value - displayedPages.value + 1)
-    }
+    flip.frontImage =
+      displayedPages.value === 1 ? pageUrl(currentPage.value - 1) : pageUrl(firstPage.value)
+    flip.backImage =
+      displayedPages.value === 1 ? '' : pageUrl(currentPage.value - displayedPages.value + 1)
   } else {
-    if (displayedPages.value === 1) {
-      flip.frontImage = pageUrl(currentPage.value)
-      flip.backImage = ''
-    } else {
-      flip.frontImage = pageUrl(secondPage.value)
-      flip.backImage = pageUrl(currentPage.value + displayedPages.value)
-    }
+    flip.frontImage =
+      displayedPages.value === 1 ? pageUrl(currentPage.value) : pageUrl(secondPage.value)
+    flip.backImage =
+      displayedPages.value === 1 ? '' : pageUrl(currentPage.value + displayedPages.value)
   }
+}
+const flipStart = (direction: string, auto: boolean) => {
+  setFlipImages(direction)
 
   flip.direction = direction
   flip.progress = 0
@@ -656,7 +550,8 @@ const flipStart = (direction: string, auto: boolean) => {
   })
 }
 
-const flipAuto = (ease: boolean) => {
+// 创建一个动画
+const flipAuto = (shouldEase: boolean) => {
   const startTime = Date.now()
   const duration = props.flipDuration * (1 - flip.progress)
   const startRatio = flip.progress
@@ -668,7 +563,7 @@ const flipAuto = (ease: boolean) => {
     const elapsedTime = Date.now() - startTime
     let ratio = startRatio + elapsedTime / duration
     ratio = ratio > 1 ? 1 : ratio
-    flip.progress = ease ? easeInOut(ratio) : ratio
+    flip.progress = shouldEase ? easeInOut(ratio) : ratio
     if (ratio < 1) {
       requestAnimationFrame(animate)
     } else {
