@@ -119,7 +119,7 @@ import useImageLoad from './useImageLoad'
 import { createConsola } from 'consola'
 import { flipProps } from './flipProps'
 const logger = createConsola({
-  level: -1 // 设置日志级别为 silent
+  level: 4 // 设置日志级别为 silent
 })
 
 // 现在，这个文件中的 consola 日志将不会被输出
@@ -354,6 +354,7 @@ onMounted(() => {
     passive: true
   })
   zoom.value = props.zooms[0]
+  logger.info('props.startPage', props.startPage)
   goToPage(props.startPage)
 })
 
