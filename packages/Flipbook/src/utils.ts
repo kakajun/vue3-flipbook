@@ -169,3 +169,16 @@ export const computeLighting = (
 
   return gradients.join(',')
 }
+
+export const calculateXAndZ = (rad: number, radius: number, originRight: boolean, face: string,pageWidth:number) => {
+  let x = Math.sin(rad) * radius
+  if (originRight) {
+    x = pageWidth - x
+  }
+  let z = (1 - Math.cos(rad)) * radius
+  if (face === 'back') {
+    z = -z
+  }
+
+  return { x, z }
+}

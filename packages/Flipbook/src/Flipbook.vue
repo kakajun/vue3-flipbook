@@ -40,7 +40,7 @@
           :style="{ cursor: canFlipRight ? 'pointer' : 'auto' }"
           @click="flipRight"
         />
-        <div :style="{ transform: `translateX(${centerOffsetSmoothed}px)` }">
+        <div :style="{ transform: `translateX(${currentCenterOffset}px)` }">
           <img
             v-if="showLeftPage"
             class="page fixed"
@@ -117,7 +117,8 @@ import {
   calculatePageXAndOrigin,
   calculatePageMatrix,
   calculateRotate,
-  computeLighting
+  computeLighting,
+  calculateXAndZ
 } from './utils.js'
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import useZoom from './useZoom'
@@ -299,29 +300,15 @@ const boundingRight = computed(() => {
   }
 })
 
-const centerOffset = computed(() => {
-  let retval = props.centering
-    ? Math.round(viewWidth.value / 2 - (boundingLeft.value + boundingRight.value) / 2)
-    : 0
-  if (currentCenterOffset.value === 0 && imageWidth.value !== null) {
-    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-    currentCenterOffset.value = retval
-  }
-  return retval
-})
-
-const centerOffsetSmoothed = computed(() => {
-  return Math.round(currentCenterOffset.value)
-})
 const scrollLeftMin = computed(() => {
   let w = (boundingRight.value - boundingLeft.value) * zoom.value
   if (w < viewWidth.value) {
     return (
-      (boundingLeft.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value -
+      (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value -
       (viewWidth.value - w) / 2
     )
   } else {
-    return (boundingLeft.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value
+    return (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value
   }
 })
 
@@ -329,11 +316,11 @@ const scrollLeftMax = computed(() => {
   let w = (boundingRight.value - boundingLeft.value) * zoom.value
   if (w < viewWidth.value) {
     return (
-      (boundingLeft.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value -
+      (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value -
       (viewWidth.value - w) / 2
     )
   } else {
-    return (boundingRight.value + (centerOffsetSmoothed.value ?? 0)) * zoom.value - viewWidth.value
+    return (boundingRight.value + (currentCenterOffset.value ?? 0)) * zoom.value - viewWidth.value
   }
 })
 
@@ -374,11 +361,7 @@ const pageScale = computed(() => {
   const xScale = imageWidth.value ? vw / imageWidth.value : 1
   const yScale = imageHeight.value ? viewHeight.value / imageHeight.value : 1
   const scale = xScale < yScale ? xScale : yScale
-  if (scale < 1) {
-    return scale
-  } else {
-    return 1
-  }
+  return scale < 1 ? scale : 1
 })
 
 const pageWidth = computed(() =>
@@ -419,19 +402,6 @@ const flipRight = () => {
   if (canFlipRight.value) {
     flipStart('right', true)
   }
-}
-
-const calculateXAndZ = (rad: number, radius: number, originRight: boolean, face: string) => {
-  let x = Math.sin(rad) * radius
-  if (originRight) {
-    x = pageWidth.value - x
-  }
-  let z = (1 - Math.cos(rad)) * radius
-  if (face === 'back') {
-    z = -z
-  }
-
-  return { x, z }
 }
 
 type Polygon = [string, string, string, string, string, number]
@@ -482,18 +452,20 @@ const makePolygonArray = (face: string) => {
   minX.value = Infinity
   maxX.value = -Infinity
   const polygonArray: PolygonArray = []
-  const xValues = []
+  let tempminX = Infinity
+  let tempmaxX = -Infinity
+
   for (let i = 0; i < props.nPolygons; i++) {
     const bgPos = `${(i / (props.nPolygons - 1)) * 100}% 0px`
     const transformMatrix = pageMatrix.clone()
     const rad = originRight ? theta - radian : radian
-    const { x, z } = calculateXAndZ(rad, radius, originRight, face)
+    const { x, z } = calculateXAndZ(rad, radius, originRight, face, pageWidth.value)
     transformMatrix.translate3d(x, 0, z)
     transformMatrix.rotateY(-rotate)
-
     const x0 = transformMatrix.transformX(0)
     const x1 = transformMatrix.transformX(polyWidth)
-    xValues.push(x0, x1)
+    tempminX = Math.min(tempminX, x0, x1)
+    tempmaxX = Math.max(tempmaxX, x0, x1)
     const lighting =
       computeLighting(pageRotation - rotate, dRotate, props.ambient, props.gloss) || ''
     radian += dRadian
@@ -507,8 +479,8 @@ const makePolygonArray = (face: string) => {
       Math.abs(Math.round(z)) as number
     ])
   }
-  maxX.value = Math.max(...xValues)
-  minX.value = Math.min(...xValues)
+  maxX.value = tempmaxX
+  minX.value = tempminX
   return polygonArray
 }
 
@@ -771,8 +743,19 @@ watch(currentPage, () => {
   preloadImages()
 })
 
-watch(centerOffset, () => {
+const centerOffset = computed(() => {
+  let retval = props.centering
+    ? Math.round(viewWidth.value / 2 - (boundingLeft.value + boundingRight.value) / 2)
+    : 0
+
+  return retval
+})
+
+watch(centerOffset, (val) => {
   if (animatingCenter.value) return
+  if (currentCenterOffset.value === 0 && imageWidth.value !== null) {
+    currentCenterOffset.value = val
+  }
   const animate = () => {
     requestAnimationFrame(() => {
       const rate = 0.1
