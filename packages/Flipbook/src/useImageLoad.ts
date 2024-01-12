@@ -1,4 +1,4 @@
-import { ref, Ref } from 'vue'
+import { ref, Ref, getCurrentInstance } from 'vue'
 import type { FlipProps } from './flipProps.ts'
 
 interface UseImageLoad {
@@ -11,7 +11,6 @@ interface UseImageLoad {
   didLoadImage: (ev: Event) => void
 }
 export default function useImageLoad(
-  props: FlipProps,
   preloadImages: () => void, // Add the missing type annotation here
   zoom: Ref<number>,
   zooming: Ref<boolean>
@@ -22,7 +21,11 @@ export default function useImageLoad(
   const imageLoadCallback = ref<() => void | null>()
   const imageWidth = ref<number | null>(null)
   const imageHeight = ref<number | null>(null)
-
+  const currentInstance = getCurrentInstance()
+  if (!currentInstance) {
+    throw new Error('useDrawer() can only be used inside setup() or functional components!')
+  }
+  const props = currentInstance.props as FlipProps
   const pageUrl = (page: number, hiRes = false): string => {
     if (hiRes && zoom.value > 1 && !zooming.value) {
       return (page < props.pagesHiRes!.length ? props.pagesHiRes?.[page] : '') || ''

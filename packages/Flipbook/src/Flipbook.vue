@@ -188,9 +188,8 @@ const {
   onWheel,
   scrollLeft,
   scrollTop
-} = useZoom(props, refViewport, preloadImages)
+} = useZoom( refViewport, preloadImages)
 const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, didLoadImage } = useImageLoad(
-  props,
   preloadImages,
   zoom,
   zooming

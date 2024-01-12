@@ -20,7 +20,6 @@ export interface UseZoom {
 }
 
 export default function useZoom(
-  props: FlipProps,
   refViewport: Ref<HTMLDivElement | undefined>,
   preloadImages: (arg0: boolean) => void | undefined
 ): UseZoom {
@@ -28,6 +27,7 @@ export default function useZoom(
   if (!currentInstance) {
     throw new Error('useDrawer() can only be used inside setup() or functional components!')
   }
+  const props = currentInstance.props as FlipProps
   const zoom = ref<number>(1)
   let zoomIndex = 0
   const zooming = ref<boolean>(false)
@@ -50,6 +50,7 @@ export default function useZoom(
   }
 
   const zoomTo = (pzoom: number, zoomAt: TouchPoint) => {
+
     const viewport = refViewport?.value
     if (viewport) {
       let fixedX, fixedY
