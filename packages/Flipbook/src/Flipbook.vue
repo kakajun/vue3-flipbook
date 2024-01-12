@@ -72,6 +72,7 @@
               :key="key"
               class="polygon"
               :class="{ blank: !bgImage }"
+              :data-img="bgImage"
               :style="{
                 backgroundImage: bgImage && `url(${loadImage(bgImage)})`,
                 backgroundSize: polygonBgSize,
@@ -137,7 +138,7 @@ const props = defineProps(flipProps)
 
 const viewWidth = ref<number>(0)
 const viewHeight = ref<number>(0)
-const displayedPages = ref<number>(1)
+const displayedPages = ref<number>(0)
 const currentPage = ref<number>(0)
 const firstPage = ref<number>(0)
 const secondPage = ref<number>(1)
@@ -188,7 +189,7 @@ const {
   onWheel,
   scrollLeft,
   scrollTop
-} = useZoom( refViewport, preloadImages)
+} = useZoom(refViewport, preloadImages)
 const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, didLoadImage } = useImageLoad(
   preloadImages,
   zoom,
@@ -342,6 +343,7 @@ const scrollTopMax = computed(() => {
 })
 
 onMounted(() => {
+  setFlipImages(props.forwardDirection)
   onResize()
   window.addEventListener('resize', onResize, {
     passive: true
@@ -417,6 +419,10 @@ const makePolygonArray = (face: string) => {
   flip.opacity = displayedPages.value === 1 && progress > 0.7 ? 1 - (progress - 0.7) / 0.3 : 1
 
   let image = face === 'front' ? flip.frontImage : flip.backImage
+  logger.info('flip.backImage', flip.backImage)
+  logger.info('flip.frontImage', flip.frontImage)
+  logger.info('face', face)
+  logger.info('image', image)
   const polyWidth = pageWidth.value / props.nPolygons
   const { pageX, originRight } = calculatePageXAndOrigin(
     face,
@@ -775,6 +781,7 @@ watch(centerOffset, (val) => {
 watch(
   () => props.pages,
   (after, before) => {
+    setFlipImages(props.forwardDirection)
     fixFirstPage()
     if (!before?.length && after?.length) {
       if (props.startPage > 1 && after[0] == null) {

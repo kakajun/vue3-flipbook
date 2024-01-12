@@ -27,6 +27,7 @@ export default function useImageLoad(
   }
   const props = currentInstance.props as FlipProps
   const pageUrl = (page: number, hiRes = false): string => {
+    if (page < 1) return ''
     if (hiRes && zoom.value > 1 && !zooming.value) {
       return (page < props.pagesHiRes!.length ? props.pagesHiRes?.[page] : '') || ''
     } else {
