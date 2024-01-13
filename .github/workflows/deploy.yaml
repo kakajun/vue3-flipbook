@@ -16,28 +16,13 @@ jobs:
         run: |
           bun i
           bun run build
-
-  build_storybook:
-    needs: install_and_build
-    runs-on: ubuntu-latest
-    steps:
       - name: Build Storybook 💪
         run: bun run build-storybook
-
-  deploy_storybook:
-    needs: build_storybook
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy Storybook
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.PERSONAL_SECRET_TOKEN2 }}
           publish_dir: ./packages/storybook/storybook-static
-
-  publish:
-    needs: deploy_storybook
-    runs-on: ubuntu-latest
-    steps:
       - name: publish 🚀
         run: node publish.js
         env:
