@@ -29,7 +29,7 @@
   "scripts": {
     "build": "vue-tsc --declaration --emitDeclarationOnly --declarationDir typings && vite build",
     "type": "vue-tsc --declaration --emitDeclarationOnly --declarationDir typings",
-    "publish": "npm run build && node publish.js"
+    "publish": "node publish.js"
   },
   "main": "./dist/vue3-flipbook.js",
   "module": "./dist/vue3-flipbook.mjs",
