@@ -34,11 +34,11 @@ jobs:
           github_token: ${{ secrets.PERSONAL_SECRET_TOKEN2 }}
           publish_dir: ./packages/storybook/storybook-static
 
-  # publish:
-  #   needs: deploy_storybook
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: publish 🚀
-  #       run: node publish.js
-  #       env:
-  #         NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  publish:
+    needs: deploy_storybook
+    runs-on: ubuntu-latest
+    steps:
+      - name: publish 🚀
+        run: node publish.js
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
