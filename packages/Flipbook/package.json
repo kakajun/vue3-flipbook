@@ -29,6 +29,7 @@
   "scripts": {
     "build": "vue-tsc --declaration --emitDeclarationOnly --declarationDir typings && vite build",
     "type": "vue-tsc --declaration --emitDeclarationOnly --declarationDir typings",
+    "build-storybook": "abc build",
     "publish": "npm run build && node publish.js"
   },
   "main": "./dist/vue3-flipbook.js",
