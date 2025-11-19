@@ -1,6 +1,6 @@
 import Flipbook from 'vue3-flipbook'
 import type { StoryObj } from '@storybook/vue3'
-import 'vue3-flipbook/dist/style.css'
+import 'vue3-flipbook/dist/vue3-flipbook.css'
 type Story = StoryObj<typeof Flipbook>
 const description = `
 vue3-flipbook  is a Vue component that displays images in 3D page flip effect

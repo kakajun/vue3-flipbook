@@ -1,12 +1,4 @@
-import {
-  identity,
-  multiply,
-  perspective,
-  translate,
-  translate3d,
-  rotateY,
-  toString
-} from 'rematrix'
+import { identity, multiply, perspective, translate3d, rotateY, toString } from 'rematrix'
 
 import type { Matrix3D } from 'rematrix'
 
@@ -37,8 +29,8 @@ export default class Matrix {
     return (x * this.m[0] + this.m[12]) / (x * this.m[3] + this.m[15])
   }
 
-  public translate(x: number, y?: number): void {
-    this.multiply(translate(x, y))
+  public translate(x: number, y: number = 0): void {
+    this.multiply(translate3d(x, y, 0))
   }
 
   public translate3d(x: number, y: number, z: number): void {

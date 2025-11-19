@@ -33,7 +33,7 @@
   },
   "main": "./dist/vue3-flipbook.js",
   "module": "./dist/vue3-flipbook.mjs",
-  "style": "./dist/style.css",
+  "style": "./dist/vue3-flipbook.css",
   "types": "./typings/index.d.ts",
   "files": [
     "dist/*",

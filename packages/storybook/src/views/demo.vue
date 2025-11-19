@@ -55,7 +55,7 @@ import PlusIcon from 'vue-material-design-icons/PlusCircle.vue'
 import MinusIcon from 'vue-material-design-icons/MinusCircle.vue'
 // import Flipbook from '../../../Flipbook/src/Flipbook.vue'
 import Flipbook from 'vue3-flipbook'
-import 'vue3-flipbook/dist/style.css'
+import 'vue3-flipbook/dist/vue3-flipbook.css'
 
 import Ribbon from './Ribbon.vue'
 
