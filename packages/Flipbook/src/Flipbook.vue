@@ -121,7 +121,7 @@ import {
   computeLighting,
   calculateXAndZ
 } from './utils.js'
-import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, getCurrentInstance } from 'vue'
 import useZoom from './useZoom'
 import type { TouchPoint } from './useZoom'
 import useImageLoad from './useImageLoad'
@@ -195,6 +195,9 @@ const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, didLoadImag
   zoom,
   zooming
 )
+
+defineExpose({ pageUrl })
+;(getCurrentInstance() as any).proxy.pageUrl = pageUrl
 
 const viewportClass = computed(() => ({
   zoom: zooming.value || zoom.value > 1,

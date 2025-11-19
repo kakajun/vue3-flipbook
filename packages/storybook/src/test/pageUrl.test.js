@@ -11,7 +11,7 @@ test('returns high resolution page URL when hiRes is true and zoom is greater th
       zooming: false
     }
   })
-  expect(wrapper.vm.pageUrl(0, true)).toBe('page1_hi_res.jpg')
+  expect(wrapper.vm.$.setupState.pageUrl(0, true)).toBe('page1_hi_res.jpg')
 })
 
 test('returns normal resolution page URL when hiRes is false or zoom is not greater than 1', () => {
@@ -23,8 +23,8 @@ test('returns normal resolution page URL when hiRes is false or zoom is not grea
       zooming: false
     }
   })
-  expect(wrapper.vm.pageUrl(0, true)).toBe('page1.jpg')
-  expect(wrapper.vm.pageUrl(0, false)).toBe('page1.jpg')
+  expect(wrapper.vm.$.setupState.pageUrl(0, true)).toBe('page1.jpg')
+  expect(wrapper.vm.$.setupState.pageUrl(0, false)).toBe('page1.jpg')
 })
 
 test('returns null when page does not exist', () => {
@@ -36,5 +36,5 @@ test('returns null when page does not exist', () => {
       zooming: false
     }
   })
-  expect(wrapper.vm.pageUrl(2, true)).toBe(null)
+  expect(wrapper.vm.$.setupState.pageUrl(2, true)).toBe(null)
 })
