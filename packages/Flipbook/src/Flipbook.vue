@@ -110,6 +110,7 @@
 </template>
 
 <script lang="ts" setup>
+defineOptions({ name: 'Flipbook' })
 import type { emitEvents } from './index-types'
 import {
   calculateThetaAndRadius,
@@ -128,11 +129,10 @@ import useImageLoad from './useImageLoad'
 import { createConsola } from 'consola'
 import { flipProps } from './flipProps'
 const logger = createConsola({
-  level: 4 // 设置日志级别为 silent
+  level: 0
 })
 
 // 现在，这个文件中的 consola 日志将不会被输出
-logger.info('This will not be logged')
 const emit = defineEmits<emitEvents>()
 const props = defineProps(flipProps)
 

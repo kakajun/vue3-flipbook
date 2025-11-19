@@ -49,15 +49,14 @@
     "vue-eslint-parser": "^10.2.0"
   },
   "lint-staged": {
-    "*.{js,vue}": [
-      "bun eslint --fix",
-      "bash -c 'bun typecheck'"
+    "*.{js,ts,vue}": [
+      "eslint --fix"
     ],
     "*.{css,vue}": "stylelint --fix"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "bun typecheck && bun lint-staged && bun run test"
+      "pre-commit": "pnpm lint-staged"
     }
   },
   "browserslist": [

@@ -4,10 +4,9 @@ import type { FlipProps } from './flipProps.ts'
 interface UseImageLoad {
   imageWidth: Ref<number | null>
   imageHeight: Ref<number | null>
-  pageUrl: (page: number, hiRes?: boolean) => string
+  pageUrl: (page: number, hiRes?: boolean) => string | null
   loadImage: (url: string) => string
   pageUrlLoading: (page: number, hiRes: boolean) => string | undefined
-  // onImageLoad: (trigger: number, cb: () => void) => void
   didLoadImage: (ev: Event) => void
 }
 export default function useImageLoad(
@@ -26,12 +25,12 @@ export default function useImageLoad(
     throw new Error('useDrawer() can only be used inside setup() or functional components!')
   }
   const props = currentInstance.props as FlipProps
-  const pageUrl = (page: number, hiRes = false): string => {
-    if (page < 1) return ''
+  const pageUrl = (page: number, hiRes = false): string | null => {
+    if (page < 0) return null
     if (hiRes && zoom.value > 1 && !zooming.value) {
-      return (page < props.pagesHiRes!.length ? props.pagesHiRes?.[page] : '') || ''
+      return page < (props.pagesHiRes?.length ?? 0) ? props.pagesHiRes?.[page] ?? null : null
     } else {
-      return (page < props.pages!.length ? props.pages?.[page] : '') || ''
+      return page < (props.pages?.length ?? 0) ? props.pages?.[page] ?? null : null
     }
   }
 
@@ -54,10 +53,11 @@ export default function useImageLoad(
 
   const pageUrlLoading = (page: number, hiRes = false): string | undefined => {
     const url = pageUrl(page, hiRes)
+    if (!url) return undefined
     if (hiRes && zoom.value > 1 && !zooming.value) {
       return url
     }
-    return url && loadImage(url)
+    return loadImage(url)
   }
 
   // const onImageLoad = (trigger: number, cb: Function): void => {
