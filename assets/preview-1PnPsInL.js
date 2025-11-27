@@ -1,0 +1,1 @@
+const t={parameters:{layout:"centered",actions:{argTypesRegex:"^on[A-Z].*"},controls:{matchers:{color:/(background|color)$/i,date:/Date$/i}}},decorators:[e=>({components:{story:e},template:'<div style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60vh;padding:16px;box-sizing:border-box"><story /></div>'})]};export{t as default};
