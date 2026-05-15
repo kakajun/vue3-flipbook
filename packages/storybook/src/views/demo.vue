@@ -47,74 +47,74 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import 'vue-material-design-icons/styles.css'
-import LeftIcon from 'vue-material-design-icons/ChevronLeftCircle.vue'
-import RightIcon from 'vue-material-design-icons/ChevronRightCircle.vue'
-import PlusIcon from 'vue-material-design-icons/PlusCircle.vue'
-import MinusIcon from 'vue-material-design-icons/MinusCircle.vue'
-// import Flipbook from '../../../Flipbook/src/Flipbook.vue'
-import Flipbook from 'vue3-flipbook'
-import 'vue3-flipbook/dist/vue3-flipbook.css'
+import { ref, onMounted } from "vue";
+import "vue-material-design-icons/styles.css";
+import LeftIcon from "vue-material-design-icons/ChevronLeftCircle.vue";
+import RightIcon from "vue-material-design-icons/ChevronRightCircle.vue";
+import PlusIcon from "vue-material-design-icons/PlusCircle.vue";
+import MinusIcon from "vue-material-design-icons/MinusCircle.vue";
+import Flipbook from "../../../Flipbook/src/Flipbook.vue";
+// import Flipbook from 'vue3-flipbook'
+// import "vue3-flipbook/dist/vue3-flipbook.css";
 
-import Ribbon from './Ribbon.vue'
+import Ribbon from "./Ribbon.vue";
 
-const flipbookref = ref(null)
-const pages = ref([])
-const pagesHiRes = ref([])
-const hasMouse = ref(true)
-const pageNum = ref(null)
+const flipbookref = ref(null);
+const pages = ref([]);
+const pagesHiRes = ref([]);
+const hasMouse = ref(true);
+const pageNum = ref(null);
 
 const onFlipLeftStart = (page) => {
-  console.log('flip-left-start', page)
-}
+  console.log("flip-left-start", page);
+};
 const onFlipLeftEnd = (page) => {
-  console.log('flip-left-end', page)
-  window.location.hash = '#' + page
-}
+  console.log("flip-left-end", page);
+  window.location.hash = "#" + page;
+};
 const onFlipRightStart = (page) => {
-  console.log('flip-right-start', page)
-}
+  console.log("flip-right-start", page);
+};
 const onFlipRightEnd = (page) => {
-  console.log('flip-right-end', page)
-  window.location.hash = '#' + page
-}
+  console.log("flip-right-end", page);
+  window.location.hash = "#" + page;
+};
 const onZoomStart = (zoom) => {
-  console.log('zoom-start', zoom)
-}
+  console.log("zoom-start", zoom);
+};
 const onZoomEnd = (zoom) => {
-  console.log('zoom-end', zoom)
-}
+  console.log("zoom-end", zoom);
+};
 const setPageFromHash = () => {
-  const n = parseInt(window.location.hash.slice(1), 10)
-  if (isFinite(n)) pageNum.value = n
-}
+  const n = parseInt(window.location.hash.slice(1), 10);
+  if (isFinite(n)) pageNum.value = n;
+};
 
 onMounted(async () => {
-  window.addEventListener('keydown', (ev) => {
-    const flipbook = flipbookref.value
-    if (!flipbook) return
-    if (ev.key === 'ArrowLeft' && flipbook.canFlipLeft) flipbook.flipLeft()
-    if (ev.key === 'ArrowRight' && flipbook.canFlipRight) flipbook.flipRight()
-  })
-  getPages()
-  window.addEventListener('hashchange', setPageFromHash)
-  setPageFromHash()
-})
+  window.addEventListener("keydown", (ev) => {
+    const flipbook = flipbookref.value;
+    if (!flipbook) return;
+    if (ev.key === "ArrowLeft" && flipbook.canFlipLeft) flipbook.flipLeft();
+    if (ev.key === "ArrowRight" && flipbook.canFlipRight) flipbook.flipRight();
+  });
+  getPages();
+  window.addEventListener("hashchange", setPageFromHash);
+  setPageFromHash();
+});
 
 const getPages = async () => {
   const importAll = async (r) => {
-    const images = []
+    const images = [];
     for (const path in r) {
-      images.push((await r[path]()).default)
+      images.push((await r[path]()).default);
     }
-    return images
-  }
-  const images = import.meta.glob('@/assets/images/*.jpg')
-  const imagesLarge = import.meta.glob('@/assets/images-large/*.jpg')
-  pages.value = [null, ...(await importAll(images))]
-  pagesHiRes.value = [null, ...(await importAll(imagesLarge))]
-}
+    return images;
+  };
+  const images = import.meta.glob("@/assets/images/*.jpg");
+  const imagesLarge = import.meta.glob("@/assets/images-large/*.jpg");
+  pages.value = [null, ...(await importAll(images))];
+  pagesHiRes.value = [null, ...(await importAll(imagesLarge))];
+};
 </script>
 
 <style>

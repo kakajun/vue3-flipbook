@@ -11,7 +11,7 @@
         flipLeft,
         flipRight,
         zoomIn,
-        zoomOut
+        zoomOut,
       }"
     />
     <div
@@ -48,7 +48,7 @@
               width: pageWidth + 'px',
               height: pageHeight + 'px',
               left: xMargin + 'px',
-              top: yMargin + 'px'
+              top: yMargin + 'px',
             }"
             :src="pageUrlLoading(leftPage, true)"
             @load="didLoadImage"
@@ -60,7 +60,7 @@
               width: pageWidth + 'px',
               height: pageHeight + 'px',
               left: viewWidth / 2 + 'px',
-              top: yMargin + 'px'
+              top: yMargin + 'px',
             }"
             :src="pageUrlLoading(rightPage, true)"
             @load="didLoadImage"
@@ -80,7 +80,7 @@
                 width: polygonWidth,
                 height: polygonHeight,
                 transform: transform,
-                zIndex: z
+                zIndex: z,
               }"
             >
               <div
@@ -97,7 +97,7 @@
               top: yMargin + 'px',
               width: boundingRight - boundingLeft + 'px',
               height: pageHeight + 'px',
-              cursor: cursor
+              cursor: cursor,
             }"
             @touchstart="onTouchStart"
             @pointerdown="onPointerDown"
@@ -110,8 +110,8 @@
 </template>
 
 <script lang="ts" setup>
-defineOptions({ name: 'Flipbook' })
-import type { emitEvents } from './index-types'
+defineOptions({ name: "Flipbook" });
+import type { emitEvents } from "./index-types";
 import {
   calculateThetaAndRadius,
   calculatePageRotation,
@@ -120,64 +120,72 @@ import {
   calculatePageMatrix,
   calculateRotate,
   computeLighting,
-  calculateXAndZ
-} from './utils.js'
-import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, getCurrentInstance } from 'vue'
-import useZoom from './useZoom'
-import type { TouchPoint } from './useZoom'
-import useImageLoad from './useImageLoad'
-import { createConsola } from 'consola'
-import { flipProps } from './flipProps'
+  calculateXAndZ,
+} from "./utils.js";
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  getCurrentInstance,
+} from "vue";
+import useZoom from "./useZoom";
+import type { TouchPoint } from "./useZoom";
+import useImageLoad from "./useImageLoad";
+import { createConsola } from "consola";
+import { flipProps } from "./flipProps";
 const logger = createConsola({
-  level: 0
-})
+  level: 0,
+});
 
 // 现在，这个文件中的 consola 日志将不会被输出
-const emit = defineEmits<emitEvents>()
-const props = defineProps(flipProps)
+const emit = defineEmits<emitEvents>();
+const props = defineProps(flipProps);
 
-const viewWidth = ref<number>(0)
-const viewHeight = ref<number>(0)
-const displayedPages = ref<number>(0)
-const currentPage = ref<number>(0)
-const firstPage = ref<number>(0)
-const secondPage = ref<number>(1)
-const touchStartX = ref<number | null>(null)
-const touchStartY = ref<number | null>(null)
-const maxMove = ref<number>(0)
-const activeCursor = ref<string | null>(null)
-const hasTouchEvents = ref<boolean>(false)
-const hasPointerEvents = ref<boolean>(false)
-const minX = ref<number>(Infinity)
-const maxX = ref<number>(-Infinity)
-const refViewport = ref<HTMLDivElement>()
+const viewWidth = ref<number>(0);
+const viewHeight = ref<number>(0);
+const displayedPages = ref<number>(0);
+const currentPage = ref<number>(0);
+const firstPage = ref<number>(0);
+const secondPage = ref<number>(1);
+const touchStartX = ref<number | null>(null);
+const touchStartY = ref<number | null>(null);
+const maxMove = ref<number>(0);
+const activeCursor = ref<string | null>(null);
+const hasTouchEvents = ref<boolean>(false);
+const hasPointerEvents = ref<boolean>(false);
+const minX = ref<number>(Infinity);
+const maxX = ref<number>(-Infinity);
+const refViewport = ref<HTMLDivElement>();
 const flip = reactive({
   progress: 0,
-  direction: 'right',
-  frontImage: '',
-  backImage: '',
+  direction: "right",
+  frontImage: "",
+  backImage: "",
   auto: false,
-  opacity: 1
-})
+  opacity: 1,
+});
 
-const currentCenterOffset = ref<number>(0)
-const animatingCenter = ref<boolean>(false)
-const startScrollLeft = ref<number>(0)
-const startScrollTop = ref<number>(0)
+const currentCenterOffset = ref<number>(0);
+const animatingCenter = ref<boolean>(false);
+const startScrollLeft = ref<number>(0);
+const startScrollTop = ref<number>(0);
 
 const preloadImages = (hiRes: boolean = false): void => {
   for (let i = currentPage.value - 3; i <= currentPage.value + 3; i++) {
-    pageUrlLoading(i, false) // this preloads image
+    pageUrlLoading(i, false); // this preloads image
   }
   if (hiRes) {
     for (let i = currentPage.value; i < currentPage.value + displayedPages.value; i++) {
-      const src = props.pagesHiRes[i]
-      if (src && typeof src === 'string') {
-        new Image().src = src
+      const src = props.pagesHiRes[i];
+      if (src && typeof src === "string") {
+        new Image().src = src;
       }
     }
   }
-}
+};
 const {
   zoom,
   zooming,
@@ -188,255 +196,300 @@ const {
   zoomAt,
   onWheel,
   scrollLeft,
-  scrollTop
-} = useZoom(refViewport, preloadImages)
+  scrollTop,
+} = useZoom(refViewport, preloadImages);
 const { imageWidth, imageHeight, pageUrl, loadImage, pageUrlLoading, didLoadImage } = useImageLoad(
   preloadImages,
   zoom,
-  zooming
-)
+  zooming,
+);
 
-defineExpose({ pageUrl })
-;(getCurrentInstance() as any).proxy.pageUrl = pageUrl
+defineExpose({ pageUrl });
+(getCurrentInstance() as any).proxy.pageUrl = pageUrl;
 
 const viewportClass = computed(() => ({
   zoom: zooming.value || zoom.value > 1,
-  'drag-to-scroll': !hasTouchEvents.value
-}))
+  "drag-to-scroll": !hasTouchEvents.value,
+}));
 
 const viewportStyle = computed(() => ({
-  cursor: cursor.value == 'grabbing' ? 'grabbing' : 'auto'
-}))
+  cursor: cursor.value == "grabbing" ? "grabbing" : "auto",
+}));
 
 const canFlipLeft = computed(() => {
-  return props.forwardDirection === 'left' ? canGoForward.value : canGoBack.value
-})
+  return props.forwardDirection === "left" ? canGoForward.value : canGoBack.value;
+});
 
 const canFlipRight = computed(() => {
-  return props.forwardDirection === 'right' ? canGoForward.value : canGoBack.value
-})
+  return props.forwardDirection === "right" ? canGoForward.value : canGoBack.value;
+});
 
 const numPages = computed(() => {
-  return props.pages![0] === null ? props.pages!.length - 1 : props.pages!.length
-})
+  return props.pages![0] === null ? props.pages!.length - 1 : props.pages!.length;
+});
 
 const page = computed(() => {
-  return props.pages![0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value)
-})
+  return props.pages![0] !== null ? currentPage.value + 1 : Math.max(1, currentPage.value);
+});
 
-const canGoForward = computed(() => currentPage.value < props.pages!.length - displayedPages.value)
+const canGoForward = computed(() => currentPage.value < props.pages!.length - displayedPages.value);
 
 const canGoBack = computed(
   () =>
     currentPage.value >= displayedPages.value &&
-    !(displayedPages.value === 1 && !pageUrl(firstPage.value - 1))
-)
+    !(displayedPages.value === 1 && !pageUrl(firstPage.value - 1)),
+);
 
 const leftPage = computed(() => {
-  return props.forwardDirection === 'right' || displayedPages.value === 1
+  return props.forwardDirection === "right" || displayedPages.value === 1
     ? firstPage.value
-    : secondPage.value
-})
+    : secondPage.value;
+});
 
 const rightPage = computed(() => {
-  return props.forwardDirection === 'right' || displayedPages.value === 1
+  return props.forwardDirection === "right" || displayedPages.value === 1
     ? secondPage.value
-    : firstPage.value
-})
+    : firstPage.value;
+});
 
-const showLeftPage = computed(() => pageUrl(leftPage.value))
+const showLeftPage = computed(() => pageUrl(leftPage.value));
 
-const showRightPage = computed(() => pageUrl(rightPage.value) && displayedPages.value === 2)
+const showRightPage = computed(() => pageUrl(rightPage.value) && displayedPages.value === 2);
 
 const cursor = computed(() => {
   if (activeCursor.value) {
-    return activeCursor.value
+    return activeCursor.value;
   } else if (props.clickToZoom && canZoomIn.value) {
-    return 'zoom-in'
+    return "zoom-in";
   } else if (props.clickToZoom && canZoomOut.value) {
-    return 'zoom-out'
+    return "zoom-out";
   } else if (props.dragToFlip) {
-    return 'grab'
+    return "grab";
   } else {
-    return 'auto'
+    return "auto";
   }
-})
+});
 
-const xMargin = computed(() => (viewWidth.value - pageWidth.value * displayedPages.value) / 2)
-const yMargin = computed(() => (viewHeight.value - pageHeight.value) / 2)
+const xMargin = computed(() => (viewWidth.value - pageWidth.value * displayedPages.value) / 2);
+const yMargin = computed(() => (viewHeight.value - pageHeight.value) / 2);
 
 const polygonWidth = computed(() => {
-  let w = pageWidth.value / props.nPolygons
-  w = Math.ceil(w + 1 / zoom.value)
-  return w + 'px'
-})
+  let w = pageWidth.value / props.nPolygons;
+  w = Math.ceil(w + 1 / zoom.value);
+  return w + "px";
+});
 
-const polygonHeight = computed(() => pageHeight.value + 'px')
+const polygonHeight = computed(() => pageHeight.value + "px");
 
-const polygonBgSize = computed(() => `${pageWidth.value}px ${pageHeight.value}px`)
+const polygonBgSize = computed(() => `${pageWidth.value}px ${pageHeight.value}px`);
 
-const polygonArray = computed(() => makePolygonArray('front').concat(makePolygonArray('back')))
+const polygonArray = computed(() => makePolygonArray("front").concat(makePolygonArray("back")));
 const boundingLeft = computed(() => {
   if (displayedPages.value === 1) {
-    return xMargin.value
+    return xMargin.value;
   } else {
-    let x
+    let x;
     if (pageUrl(leftPage.value)) {
-      x = xMargin.value
+      x = xMargin.value;
     } else {
-      x = viewWidth.value / 2
+      x = viewWidth.value / 2;
     }
     if (x < minX.value) {
-      return x
+      return x;
     } else {
-      return minX.value
+      return minX.value;
     }
   }
-})
+});
 
 const boundingRight = computed(() => {
   if (displayedPages.value === 1) {
-    return viewWidth.value - xMargin.value
+    return viewWidth.value - xMargin.value;
   } else {
-    let x = pageUrl(rightPage.value) ? viewWidth.value - xMargin.value : viewWidth.value / 2
-    return x > maxX.value ? x : maxX.value
+    let x = pageUrl(rightPage.value) ? viewWidth.value - xMargin.value : viewWidth.value / 2;
+    return x > maxX.value ? x : maxX.value;
   }
-})
+});
 
 const scrollLeftMin = computed(() => {
-  let w = (boundingRight.value - boundingLeft.value) * zoom.value
+  let w = (boundingRight.value - boundingLeft.value) * zoom.value;
   if (w < viewWidth.value) {
     return (
       (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value -
       (viewWidth.value - w) / 2
-    )
+    );
   } else {
-    return (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value
+    return (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value;
   }
-})
+});
 
 const scrollLeftMax = computed(() => {
-  let w = (boundingRight.value - boundingLeft.value) * zoom.value
+  let w = (boundingRight.value - boundingLeft.value) * zoom.value;
   if (w < viewWidth.value) {
     return (
       (boundingLeft.value + (currentCenterOffset.value ?? 0)) * zoom.value -
       (viewWidth.value - w) / 2
-    )
+    );
   } else {
-    return (boundingRight.value + (currentCenterOffset.value ?? 0)) * zoom.value - viewWidth.value
+    return (boundingRight.value + (currentCenterOffset.value ?? 0)) * zoom.value - viewWidth.value;
   }
-})
+});
 
 const scrollTopMin = computed(() => {
-  let h = pageHeight.value * zoom.value
+  let h = pageHeight.value * zoom.value;
   if (h < viewHeight.value) {
-    return yMargin.value * zoom.value - (viewHeight.value - h) / 2
+    return yMargin.value * zoom.value - (viewHeight.value - h) / 2;
   } else {
-    return yMargin.value * zoom.value
+    return yMargin.value * zoom.value;
   }
-})
+});
 
 const scrollTopMax = computed(() => {
-  let h = pageHeight.value * zoom.value
+  let h = pageHeight.value * zoom.value;
   if (h < viewHeight.value) {
-    return yMargin.value * zoom.value - (viewHeight.value - h) / 2
+    return yMargin.value * zoom.value - (viewHeight.value - h) / 2;
   } else {
-    return (yMargin.value + pageHeight.value) * zoom.value - viewHeight.value
+    return (yMargin.value + pageHeight.value) * zoom.value - viewHeight.value;
   }
-})
+});
 
 onMounted(() => {
-  setFlipImages(props.forwardDirection)
-  onResize()
-  window.addEventListener('resize', onResize, {
-    passive: true
-  })
-  zoom.value = props.zooms[0]
-  logger.info('props.startPage', props.startPage)
-  goToPage(props.startPage)
-})
+  setFlipImages(props.forwardDirection);
+  onResize();
+  window.addEventListener("resize", onResize, {
+    passive: true,
+  });
+  zoom.value = props.zooms[0];
+  logger.info("props.startPage", props.startPage);
+  goToPage(props.startPage);
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize)
-})
+  window.removeEventListener("resize", onResize);
+});
 
 const pageScale = computed(() => {
-  const vw = viewWidth.value / displayedPages.value
-  const xScale = imageWidth.value ? vw / imageWidth.value : 1
-  const yScale = imageHeight.value ? viewHeight.value / imageHeight.value : 1
-  const scale = xScale < yScale ? xScale : yScale
-  return scale < 1 ? scale : 1
-})
+  const vw = viewWidth.value / displayedPages.value;
+  const xScale = imageWidth.value ? vw / imageWidth.value : 1;
+  const yScale = imageHeight.value ? viewHeight.value / imageHeight.value : 1;
+  const scale = xScale < yScale ? xScale : yScale;
+  return scale < 1 ? scale : 1;
+});
 
 const pageWidth = computed(() =>
-  imageWidth.value ? Math.round(imageWidth.value * pageScale.value) : 1
-)
+  imageWidth.value ? Math.round(imageWidth.value * pageScale.value) : 1,
+);
 
 const pageHeight = computed(() =>
-  imageHeight.value ? Math.round(imageHeight.value * pageScale.value) : 1
-)
+  imageHeight.value ? Math.round(imageHeight.value * pageScale.value) : 1,
+);
 
 const onResize = () => {
-  const viewport = refViewport.value
-  if (!viewport) return
-  viewWidth.value = viewport.clientWidth
-  viewHeight.value = viewport.clientHeight
-  displayedPages.value = viewWidth.value > viewHeight.value && !props.singlePage ? 2 : 1
+  const viewport = refViewport.value;
+  if (!viewport) return;
+  viewWidth.value = viewport.clientWidth;
+  viewHeight.value = viewport.clientHeight;
+  displayedPages.value = viewWidth.value > viewHeight.value && !props.singlePage ? 2 : 1;
   if (displayedPages.value === 2) {
-    currentPage.value &= ~1
+    currentPage.value &= ~1;
   }
-  fixFirstPage()
-  minX.value = Infinity
-  maxX.value = -Infinity
-}
+  fixFirstPage();
+  minX.value = Infinity;
+  maxX.value = -Infinity;
+};
 
 const fixFirstPage = () => {
   if (displayedPages.value === 1 && currentPage.value === 0 && props.pages!.length && !pageUrl(0)) {
-    currentPage.value++
+    currentPage.value++;
   }
-}
+};
 
 const flipLeft = () => {
   if (canFlipLeft.value) {
-    flipStart('left', true)
+    flipStart("left", true);
   }
-}
+};
 
 const flipRight = () => {
   if (canFlipRight.value) {
-    flipStart('right', true)
+    flipStart("right", true);
   }
-}
+};
 
-type Polygon = [string, string, string, string, string, number]
-type PolygonArray = Polygon[]
+type Polygon = [string, string, string, string, string, number];
+type PolygonArray = Polygon[];
 
 const makePolygonArray = (face: string) => {
-  let progress = flip.progress
-  let direction = flip.direction
+  let progress = isFinite(flip.progress) ? flip.progress : 0;
+  if (progress < 0) progress = 0;
+  if (progress > 1) progress = 1;
+
+  let direction = flip.direction;
   if (displayedPages.value === 1 && direction !== props.forwardDirection) {
-    progress = 1 - progress
-    direction = props.forwardDirection
+    progress = 1 - progress;
+    direction = props.forwardDirection;
   }
 
-  flip.opacity = displayedPages.value === 1 && progress > 0.7 ? 1 - (progress - 0.7) / 0.3 : 1
+  flip.opacity = displayedPages.value === 1 && progress > 0.7 ? 1 - (progress - 0.7) / 0.3 : 1;
 
-  let image = face === 'front' ? flip.frontImage : flip.backImage
-  logger.info('flip.backImage', flip.backImage)
-  logger.info('flip.frontImage', flip.frontImage)
-  logger.info('face', face)
-  logger.info('image', image)
-  const polyWidth = pageWidth.value / props.nPolygons
+  let image = face === "front" ? flip.frontImage : flip.backImage;
+  logger.info("flip.backImage", flip.backImage);
+  logger.info("flip.frontImage", flip.frontImage);
+  logger.info("face", face);
+  logger.info("image", image);
+  const pw = isFinite(pageWidth.value) && pageWidth.value > 0 ? pageWidth.value : 1;
+  const polyWidth = pw / props.nPolygons;
   const { pageX, originRight } = calculatePageXAndOrigin(
     face,
     direction,
     xMargin.value,
     displayedPages.value,
     props.forwardDirection,
-    pageWidth.value,
-    viewWidth.value
-  )
-  const pageRotation = calculatePageRotation(progress, direction, face)
+    pw,
+    viewWidth.value,
+  );
+  minX.value = Infinity;
+  maxX.value = -Infinity;
+  const polygonArray: PolygonArray = [];
+  let tempminX = Infinity;
+  let tempmaxX = -Infinity;
+
+  // progress 极小时跳过弯曲计算，用线性平铺严密覆盖固定页面，避免浮点缝隙导致下方新页面露出
+  // 只对 front face 做此优化；back face 在 progress 接近 0 时本应背向隐藏，扁平化反而会导致它错误显示
+  if (progress < 0.02 && face === 'front') {
+    const pageMatrix = calculatePageMatrix(
+      pageX,
+      originRight,
+      0,
+      viewWidth.value,
+      props.perspective,
+      yMargin.value,
+      pw,
+    );
+    for (let i = 0; i < props.nPolygons; i++) {
+      const bgPos = `${(i / (props.nPolygons - 1)) * 100}% 0px`;
+      const transformMatrix = pageMatrix.clone();
+      const x = originRight ? pw - (i + 1) * polyWidth : i * polyWidth;
+      transformMatrix.translate3d(x, 0, 0);
+      const x0 = transformMatrix.transformX(0);
+      const x1 = transformMatrix.transformX(polyWidth);
+      tempminX = Math.min(tempminX, x0, x1);
+      tempmaxX = Math.max(tempmaxX, x0, x1);
+      polygonArray.push([
+        `${face}${i}` as string,
+        image as string,
+        "" as string,
+        bgPos as string,
+        transformMatrix.toString() as string,
+        0 as number,
+      ]);
+    }
+    maxX.value = tempmaxX;
+    minX.value = tempminX;
+    return polygonArray;
+  }
+
+  const pageRotation = calculatePageRotation(progress, direction, face);
   const pageMatrix = calculatePageMatrix(
     pageX,
     originRight,
@@ -444,139 +497,137 @@ const makePolygonArray = (face: string) => {
     viewWidth.value,
     props.perspective,
     yMargin.value,
-    pageWidth.value
-  )
-  const { theta, radius } = calculateThetaAndRadius(progress, pageWidth.value)
+    pw,
+  );
+  const { theta, radius } = calculateThetaAndRadius(progress, pw);
 
-  let radian = 0
-  let dRadian = theta / props.nPolygons
-  let rotate = calculateRotate(theta, dRadian, originRight)
-  let dRotate = (dRadian / Math.PI) * 180
-  if (face === 'back') {
-    rotate = -rotate
-    dRotate = -dRotate
+  let radian = 0;
+  let dRadian = theta / props.nPolygons;
+  let rotate = calculateRotate(theta, dRadian, originRight);
+  let dRotate = (dRadian / Math.PI) * 180;
+  if (face === "back") {
+    rotate = -rotate;
+    dRotate = -dRotate;
   }
 
-  minX.value = Infinity
-  maxX.value = -Infinity
-  const polygonArray: PolygonArray = []
-  let tempminX = Infinity
-  let tempmaxX = -Infinity
-
   for (let i = 0; i < props.nPolygons; i++) {
-    const bgPos = `${(i / (props.nPolygons - 1)) * 100}% 0px`
-    const transformMatrix = pageMatrix.clone()
-    const rad = originRight ? theta - radian : radian
-    const { x, z } = calculateXAndZ(rad, radius, originRight, face, pageWidth.value)
-    transformMatrix.translate3d(x, 0, z)
-    transformMatrix.rotateY(-rotate)
-    const x0 = transformMatrix.transformX(0)
-    const x1 = transformMatrix.transformX(polyWidth)
-    tempminX = Math.min(tempminX, x0, x1)
-    tempmaxX = Math.max(tempmaxX, x0, x1)
+    const bgPos = `${(i / (props.nPolygons - 1)) * 100}% 0px`;
+    const transformMatrix = pageMatrix.clone();
+    const rad = originRight ? theta - radian : radian;
+    const { x, z } = calculateXAndZ(rad, radius, originRight, face, pw);
+    transformMatrix.translate3d(x, 0, z);
+    transformMatrix.rotateY(-rotate);
+    const x0 = transformMatrix.transformX(0);
+    const x1 = transformMatrix.transformX(polyWidth);
+    tempminX = Math.min(tempminX, x0, x1);
+    tempmaxX = Math.max(tempmaxX, x0, x1);
     const lighting =
-      computeLighting(pageRotation - rotate, dRotate, props.ambient, props.gloss) || ''
-    radian += dRadian
-    rotate += dRotate
+      computeLighting(pageRotation - rotate, dRotate, props.ambient, props.gloss) || "";
+    radian += dRadian;
+    rotate += dRotate;
     polygonArray.push([
       `${face}${i}` as string,
       image as string,
       lighting as string,
       bgPos as string,
       transformMatrix.toString() as string,
-      Math.abs(Math.round(z)) as number
-    ])
+      Math.abs(Math.round(z)) as number,
+    ]);
   }
-  maxX.value = tempmaxX
-  minX.value = tempminX
-  return polygonArray
-}
+  maxX.value = tempmaxX;
+  minX.value = tempminX;
+  return polygonArray;
+};
 
 const setFlipImages = (direction: string) => {
   if (direction !== props.forwardDirection) {
     flip.frontImage =
-      displayedPages.value === 1 ? pageUrl(currentPage.value - 1) : pageUrl(firstPage.value)
+      displayedPages.value === 1 ? pageUrl(currentPage.value - 1) : pageUrl(firstPage.value);
     flip.backImage =
-      displayedPages.value === 1 ? '' : pageUrl(currentPage.value - displayedPages.value + 1)
+      displayedPages.value === 1 ? "" : pageUrl(currentPage.value - displayedPages.value + 1);
   } else {
     flip.frontImage =
-      displayedPages.value === 1 ? pageUrl(currentPage.value) : pageUrl(secondPage.value)
+      displayedPages.value === 1 ? pageUrl(currentPage.value) : pageUrl(secondPage.value);
     flip.backImage =
-      displayedPages.value === 1 ? '' : pageUrl(currentPage.value + displayedPages.value)
+      displayedPages.value === 1 ? "" : pageUrl(currentPage.value + displayedPages.value);
   }
-}
+};
 const flipStart = (direction: string, auto: boolean) => {
-  setFlipImages(direction)
+  if (flip.auto) return
+  setFlipImages(direction);
 
-  flip.direction = direction
-  flip.progress = 0
-  requestAnimationFrame(() => {
+  flip.direction = direction;
+  flip.progress = 0;
+
+  // 同步更新固定页面为翻页后的内容，使翻页过程中露出的区域显示新页面
+  if (flip.direction !== props.forwardDirection) {
+    if (displayedPages.value === 2) {
+      firstPage.value = currentPage.value - displayedPages.value;
+    }
+  } else {
+    if (displayedPages.value === 1) {
+      firstPage.value = currentPage.value + displayedPages.value;
+    } else {
+      secondPage.value = currentPage.value + 1 + displayedPages.value;
+    }
+  }
+
+  if (auto) {
     requestAnimationFrame(() => {
-      if (flip.direction !== props.forwardDirection) {
-        if (displayedPages.value === 2) {
-          firstPage.value = currentPage.value - displayedPages.value
-        }
-      } else {
-        if (displayedPages.value === 1) {
-          firstPage.value = currentPage.value + displayedPages.value
-        } else {
-          secondPage.value = currentPage.value + 1 + displayedPages.value
-        }
-      }
-      if (auto) {
-        flipAuto(true)
-      }
-    })
-  })
-}
+      requestAnimationFrame(() => {
+        flipAuto(true);
+      });
+    });
+  }
+};
 
 // 创建一个动画
 const flipAuto = (shouldEase: boolean) => {
-  const startTime = Date.now()
-  const duration = props.flipDuration * (1 - flip.progress)
-  const startRatio = flip.progress
-  flip.auto = true
-  flip.direction === 'left'
+  const startTime = Date.now();
+  const duration = props.flipDuration * (1 - flip.progress);
+  const startRatio = flip.progress;
+  flip.auto = true;
+  flip.direction === "left"
     ? emit(`flip-left-start`, page.value)
-    : emit(`flip-right-start`, page.value)
+    : emit(`flip-right-start`, page.value);
   const animate = () => {
-    const elapsedTime = Date.now() - startTime
-    let ratio = startRatio + elapsedTime / duration
-    ratio = ratio > 1 ? 1 : ratio
-    flip.progress = shouldEase ? easeInOut(ratio) : ratio
+    const elapsedTime = Date.now() - startTime;
+    let ratio = startRatio + elapsedTime / duration;
+    ratio = ratio > 1 ? 1 : ratio;
+    flip.progress = shouldEase ? easeInOut(ratio) : ratio;
     if (ratio < 1) {
-      requestAnimationFrame(animate)
+      requestAnimationFrame(animate);
     } else {
       if (flip.direction !== props.forwardDirection) {
-        currentPage.value -= displayedPages.value
+        currentPage.value -= displayedPages.value;
       } else {
-        currentPage.value += displayedPages.value
+        currentPage.value += displayedPages.value;
       }
-      flip.direction === 'left'
+      flip.direction === "left"
         ? emit(`flip-left-end`, page.value)
-        : emit(`flip-right-end`, page.value)
-      flip.auto = false
+        : emit(`flip-right-end`, page.value);
+      flip.auto = false;
     }
-  }
-  animate()
-}
+  };
+  animate();
+};
 
 const flipRevert = () => {
-  const t0 = Date.now()
-  const duration = props.flipDuration * flip.progress
-  const startRatio = flip.progress
-  flip.auto = true
+  const t0 = Date.now();
+  const duration = props.flipDuration * flip.progress;
+  const startRatio = flip.progress;
+  flip.auto = true;
   const animate = () => {
     requestAnimationFrame(() => {
-      const t = Date.now() - t0
-      let ratio = startRatio - (startRatio * t) / duration
-      ratio = ratio < 0 ? 0 : ratio
-      flip.progress = ratio
+      const t = Date.now() - t0;
+      let ratio = startRatio - (startRatio * t) / duration;
+      ratio = ratio < 0 ? 0 : ratio;
+      flip.progress = ratio;
       if (ratio > 0) {
-        animate()
+        animate();
       } else {
-        firstPage.value = currentPage.value
-        secondPage.value = currentPage.value + 1
+        firstPage.value = currentPage.value;
+        secondPage.value = currentPage.value + 1;
         // if (displayedPages.value === 1 && flip.direction !== props.forwardDirection) {
         //   flip.direction = null
         // } else {
@@ -584,222 +635,223 @@ const flipRevert = () => {
         //     flip.direction = null
         //   })
         // }
-        flip.auto = false
+        flip.auto = false;
       }
-    })
-  }
-  animate()
-}
+    });
+  };
+  animate();
+};
 
 const dragScroll = (x: number, y: number) => {
-  scrollLeft.value = startScrollLeft.value - x
-  scrollTop.value = startScrollTop.value - y
-}
+  scrollLeft.value = startScrollLeft.value - x;
+  scrollTop.value = startScrollTop.value - y;
+};
 
 const scrollLeftLimited = computed(() => {
-  return Math.min(scrollLeftMax.value, Math.max(scrollLeftMin.value, scrollLeft.value))
-})
+  return Math.min(scrollLeftMax.value, Math.max(scrollLeftMin.value, scrollLeft.value));
+});
 
 const scrollTopLimited = computed(() => {
-  return Math.min(scrollTopMax.value, Math.max(scrollTopMin.value, scrollTop.value))
-})
+  return Math.min(scrollTopMax.value, Math.max(scrollTopMin.value, scrollTop.value));
+});
 
 watch(scrollLeftLimited, (val) => {
   if (refViewport.value) {
-    refViewport.value.scrollLeft = val
+    refViewport.value.scrollLeft = val;
   }
-})
+});
 
 watch(scrollTopLimited, (val) => {
   if (refViewport.value) {
-    refViewport.value.scrollTop = val
+    refViewport.value.scrollTop = val;
   }
-})
+});
 
 const swipeStart = (touch: TouchPoint) => {
   if (refViewport.value) {
-    touchStartX.value = touch.pageX
-    touchStartY.value = touch.pageY
-    maxMove.value = 0
+    touchStartX.value = touch.pageX;
+    touchStartY.value = touch.pageY;
+    maxMove.value = 0;
     if (zoom.value <= 1) {
       if (props.dragToFlip) {
-        activeCursor.value = 'grab'
+        activeCursor.value = "grab";
       }
     } else {
-      startScrollLeft.value = refViewport.value.scrollLeft
-      startScrollTop.value = refViewport.value.scrollTop
-      activeCursor.value = 'all-scroll'
+      startScrollLeft.value = refViewport.value.scrollLeft;
+      startScrollTop.value = refViewport.value.scrollTop;
+      activeCursor.value = "all-scroll";
     }
   }
-}
+};
 
 const swipeMove = (touch: TouchPoint) => {
-  if (!touchStartX.value || !touchStartY.value) return
-  const x = touch.pageX - touchStartX.value
-  const y = touch.pageY - touchStartY.value
-  maxMove.value = Math.max(maxMove.value, Math.abs(x), Math.abs(y))
+  if (!touchStartX.value || !touchStartY.value) return;
+  const x = touch.pageX - touchStartX.value;
+  const y = touch.pageY - touchStartY.value;
+  maxMove.value = Math.max(maxMove.value, Math.abs(x), Math.abs(y));
   if (zoom.value > 1) {
-    dragScroll(x, y)
-    return
+    dragScroll(x, y);
+    return;
   }
-  if (!props.dragToFlip || Math.abs(y) > Math.abs(x)) return
-  activeCursor.value = 'grabbing'
-  const direction = x > 0 ? 'left' : 'right'
-  const canFlip = x > 0 ? canFlipLeft.value : canFlipRight.value
-  const swipeMin = x > 0 ? props.swipeMin : -props.swipeMin
+  if (!props.dragToFlip || Math.abs(y) > Math.abs(x)) return;
+  activeCursor.value = "grabbing";
+  const direction = x > 0 ? "left" : "right";
+  const canFlip = x > 0 ? canFlipLeft.value : canFlipRight.value;
+  const swipeMin = x > 0 ? props.swipeMin : -props.swipeMin;
   if (canFlip && x >= swipeMin) {
-    flipStart(direction, false)
+    flipStart(direction, false);
   }
   if (flip.direction === direction) {
-    flip.progress = Math.abs(x) / pageWidth.value
+    const pw = isFinite(pageWidth.value) && pageWidth.value > 0 ? pageWidth.value : 1
+    flip.progress = Math.abs(x) / pw;
     if (flip.progress > 1) {
-      flip.progress = 1
+      flip.progress = 1;
     }
   }
-  return true
-}
+  return true;
+};
 
 const swipeEnd = (touch: TouchPoint) => {
-  if (!touchStartX.value) return
+  if (!touchStartX.value) return;
   if (props.clickToZoom && maxMove.value < props.swipeMin) {
-    zoomAt(touch)
+    zoomAt(touch);
   }
   if (flip.direction !== null && !flip.auto) {
     if (flip.progress > 1 / 4) {
-      flipAuto(false)
+      flipAuto(false);
     } else {
-      flipRevert()
+      flipRevert();
     }
   }
-  touchStartX.value = null
-  activeCursor.value = null
-}
+  touchStartX.value = null;
+  activeCursor.value = null;
+};
 
 const onTouchStart = (ev: TouchEvent) => {
-  hasTouchEvents.value = true
-  swipeStart(ev.changedTouches[0])
-}
+  hasTouchEvents.value = true;
+  swipeStart(ev.changedTouches[0]);
+};
 
 const onTouchMove = (ev: TouchEvent) => {
   if (swipeMove(ev.changedTouches[0])) {
-    ev.preventDefault()
+    ev.preventDefault();
   }
-}
+};
 
 const onTouchEnd = (ev: TouchEvent) => {
-  swipeEnd(ev.changedTouches[0])
-}
+  swipeEnd(ev.changedTouches[0]);
+};
 
 const onPointerDown = (event: PointerEvent) => {
-  hasPointerEvents.value = true
-  if (hasTouchEvents.value) return
-  if (event.button !== 0) return // Ignore anything but left-click
-  swipeStart(event)
+  hasPointerEvents.value = true;
+  if (hasTouchEvents.value) return;
+  if (event.button !== 0) return; // Ignore anything but left-click
+  swipeStart(event);
   if (event.target) {
-    const targetElement = event.target as Element
-    targetElement.setPointerCapture(event.pointerId)
+    const targetElement = event.target as Element;
+    targetElement.setPointerCapture(event.pointerId);
   }
-}
+};
 
 const onPointerMove = (ev: PointerEvent) => {
   if (!hasTouchEvents.value) {
-    swipeMove(ev)
+    swipeMove(ev);
   }
-}
+};
 
 const onPointerUp = (event: PointerEvent) => {
-  if (hasTouchEvents.value) return
-  swipeEnd(event)
+  if (hasTouchEvents.value) return;
+  swipeEnd(event);
   if (event.target) {
-    const targetElement = event.target as Element
-    targetElement.releasePointerCapture(event.pointerId)
+    const targetElement = event.target as Element;
+    targetElement.releasePointerCapture(event.pointerId);
   }
-}
+};
 
 const onMouseDown = (event: MouseEvent) => {
-  if (hasTouchEvents.value || hasPointerEvents.value) return
-  if (event.button !== 0) return // Ignore anything but left-click
-  swipeStart(event)
-}
+  if (hasTouchEvents.value || hasPointerEvents.value) return;
+  if (event.button !== 0) return; // Ignore anything but left-click
+  swipeStart(event);
+};
 
 const onMouseMove = (ev: MouseEvent) => {
   if (!hasTouchEvents.value || !hasPointerEvents.value) {
-    swipeMove(ev)
+    swipeMove(ev);
   }
-}
+};
 
 const onMouseUp = (ev: MouseEvent) => {
   if (!hasTouchEvents.value || !hasPointerEvents.value) {
-    swipeEnd(ev)
+    swipeEnd(ev);
   }
-}
+};
 
 const goToPage = (p: number) => {
-  if (p === null || p === page.value) return
+  if (p === null || p === page.value) return;
 
   currentPage.value =
-    (props.pages ?? [])[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1
+    (props.pages ?? [])[0] === null && displayedPages.value === 2 && p === 1 ? 0 : p - 1;
 
-  minX.value = Infinity
-  maxX.value = -Infinity
-  currentCenterOffset.value = centerOffset.value
-}
+  minX.value = Infinity;
+  maxX.value = -Infinity;
+  currentCenterOffset.value = centerOffset.value;
+};
 
 watch(currentPage, () => {
-  firstPage.value = currentPage.value
-  secondPage.value = currentPage.value + 1
-  preloadImages()
-})
+  firstPage.value = currentPage.value;
+  secondPage.value = currentPage.value + 1;
+  preloadImages();
+});
 
 const centerOffset = computed(() => {
   let retval = props.centering
     ? Math.round(viewWidth.value / 2 - (boundingLeft.value + boundingRight.value) / 2)
-    : 0
+    : 0;
 
-  return retval
-})
+  return retval;
+});
 
 watch(centerOffset, (val) => {
-  if (animatingCenter.value) return
+  if (animatingCenter.value) return;
   if (currentCenterOffset.value === 0 && imageWidth.value !== null) {
-    currentCenterOffset.value = val
+    currentCenterOffset.value = val;
   }
   const animate = () => {
     requestAnimationFrame(() => {
-      const rate = 0.1
-      const diff = centerOffset.value - currentCenterOffset.value
+      const rate = 0.1;
+      const diff = centerOffset.value - currentCenterOffset.value;
       if (Math.abs(diff) < 0.5) {
-        currentCenterOffset.value = centerOffset.value
-        animatingCenter.value = false
+        currentCenterOffset.value = centerOffset.value;
+        animatingCenter.value = false;
       } else {
-        currentCenterOffset.value += diff * rate
-        animate()
+        currentCenterOffset.value += diff * rate;
+        animate();
       }
-    })
-  }
-  animatingCenter.value = true
-  animate()
-})
+    });
+  };
+  animatingCenter.value = true;
+  animate();
+});
 
 watch(
   () => props.pages,
   (after, before) => {
-    setFlipImages(props.forwardDirection)
-    fixFirstPage()
+    setFlipImages(props.forwardDirection);
+    fixFirstPage();
     if (!before?.length && after?.length) {
       if (props.startPage > 1 && after[0] == null) {
-        currentPage.value++
+        currentPage.value++;
       }
     }
-  }
-)
+  },
+);
 
 watch(
   () => props.startPage,
   (p) => {
-    goToPage(p)
-  }
-)
+    goToPage(p);
+  },
+);
 </script>
 
 <style lang="scss">
